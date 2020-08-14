@@ -1,4 +1,6 @@
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
@@ -21,10 +23,16 @@ namespace KenR_LeicaBot.Modules
         //dev test stuff
         [RequireUserPermission(GuildPermission.Administrator, Group = "Permission")]
         [RequireOwner(Group = "Permission")]
-        [Command("test")]
-        public async Task DevelopmentTest(IUser user = null)
+        [Command("purge")]
+        public async Task PurgeChannel([Remainder] string channel = null)
         {
-            await ChannelPurgeService.PurgeAsync(this.Context);
+            if (string.IsNullOrEmpty(channel) || !ChannelExistsAndCanBePurged(channel))
+            {
+                await ReplyAsync("Please provide a valid Channelname");
+                return;
+            }
+
+            await ChannelPurgeService.PurgeAsync(this.Context, channel);
         }
 
         // Get info on a user, or the user who invoked the command if one is not specified
@@ -36,6 +44,20 @@ namespace KenR_LeicaBot.Modules
             await ReplyAsync(user.ToString());
         }
 
- 
+        private bool ChannelExistsAndCanBePurged(string channel)
+        {
+            //security feature to not accidentally purge the wrong channels... 
+            List<string> purgableChannels = new List<string>(); //TODO: add this list to config/database
+            purgableChannels.Add("bot");
+            purgableChannels.Add("gallery");
+            purgableChannels.Add("your-best-photos");
+
+            if (!this.Context.Guild.TextChannels.Where(x => x.Name == channel).Any()) return false;
+
+            if (!purgableChannels.Contains(channel)) return false;
+
+
+            return true;
+        }
     }
 }
