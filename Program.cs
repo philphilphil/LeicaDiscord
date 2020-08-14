@@ -17,7 +17,7 @@ namespace KenR_LeicaBot
 
         public async Task MainAsync()
         {
-            Environment.SetEnvironmentVariable("token", "KEKW");
+            Environment.SetEnvironmentVariable("token", "NzQwNjE4OTM2ODgxNTEyNDQ4.XyrpIg.70bHLBlPmq34ByyYe6heHwbuEOU");
 
             using (var services = ConfigureServices())
             {
@@ -48,7 +48,7 @@ namespace KenR_LeicaBot
                 .AddSingleton<DiscordSocketClient>()
                 .AddSingleton<CommandService>()
                 .AddSingleton<CommandHandlingService>()
-                .AddSingleton<HttpClient>()
+                .AddSingleton<ChannelPurgeService>()
                 .BuildServiceProvider();
         }
     }
