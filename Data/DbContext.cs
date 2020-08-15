@@ -5,13 +5,13 @@
 
 //namespace KenR_LeicaBot.Data
 //{
-//    public class SchoolContext : DbContext
+//    public class KenContext : DbContext
 //    {
 //        public DbSet<DynamicTextCommand> DynamicTextCommands { get; set; }
 
 //        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 //        {
-//            optionsBuilder.UseSqlite("Filename=FamilyHelpFund.db");
+//            optionsBuilder.UseSqlite("Filename=KenR.db");
 //        }
 //    }
 
