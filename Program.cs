@@ -2,6 +2,7 @@
 using Discord.Commands;
 using Discord.WebSocket;
 using KenR_LeicaBot.Services;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Net.Http;
@@ -17,7 +18,12 @@ namespace KenR_LeicaBot
 
         public async Task MainAsync()
         {
-            Environment.SetEnvironmentVariable("token", "NzQwNjE4OTM2ODgxNTEyNDQ4.XyrpIg.70bHLBlPmq34ByyYe6heHwbuEOU");
+            IConfiguration Configuration = new ConfigurationBuilder()
+            .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+            .Build();
+
+
+            Environment.SetEnvironmentVariable("token", Configuration["APItoken"]);
 
             using (var services = ConfigureServices())
             {
