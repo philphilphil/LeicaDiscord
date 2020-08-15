@@ -19,7 +19,7 @@ namespace KenR_LeicaBot
         public async Task MainAsync()
         {
             IConfiguration Configuration = new ConfigurationBuilder()
-            .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+            .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
             .Build();
 
 
