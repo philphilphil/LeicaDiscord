@@ -23,7 +23,7 @@ namespace KenR_LeicaBot
             .Build();
 
 
-            Environment.SetEnvironmentVariable("token", Configuration["APItoken"]);
+            Environment.SetEnvironmentVariable("token", Configuration["API_token"]);
 
             using (var services = ConfigureServices())
             {
@@ -37,6 +37,8 @@ namespace KenR_LeicaBot
 
                 await services.GetRequiredService<CommandHandlingService>().InitializeAsync();
 
+                client.ReactionAdded += RoleService.ReactionAddedEvent;
+                client.ReactionRemoved += RoleService.ReactionRemovedEvent;
                 await Task.Delay(Timeout.Infinite);
             }
         }
