@@ -34,6 +34,7 @@ namespace KenR_LeicaBot
                 await services.GetRequiredService<CommandHandlingService>().InitializeAsync();
 
                 var rs = services.GetService<RoleService>();
+                client.Ready += rs.SetupRoleMessage;
                 client.ReactionAdded += rs.ReactionAddedEvent;
                 client.ReactionRemoved += rs.ReactionRemovedEvent;
 

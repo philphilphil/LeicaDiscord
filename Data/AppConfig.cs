@@ -11,6 +11,15 @@ namespace KenR_LeicaBot.Data
         }
 
         public string API_token { get; set; }
-        public string Camera_Role_Message_Id { get; set; }
+        public ulong Camera_Role_Message_Id { get; set; }
+
+        public IEnumerable<CameraRoleMaping> Camera_Role_Maping { get; set; }
+        public ulong Camera_Role_Channel_Id { get; set; }
+    }
+
+    public class CameraRoleMaping
+    {
+        public string emoji { get; set; }
+        public string role { get; set; }
     }
 }
