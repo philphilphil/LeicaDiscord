@@ -15,6 +15,7 @@ namespace KenR_LeicaBot.Data
 
         public IEnumerable<CameraRoleMaping> Camera_Role_Maping { get; set; }
         public ulong Camera_Role_Channel_Id { get; set; }
+        public ulong Leica_Discord_Id { get; set; }
     }
 
     public class CameraRoleMaping

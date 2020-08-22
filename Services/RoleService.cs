@@ -4,6 +4,7 @@ using KenR_LeicaBot.Data;
 using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -23,21 +24,14 @@ namespace KenR_LeicaBot.Services
         public Task ReactionAddedEvent(Cacheable<IUserMessage, ulong> msg, ISocketMessageChannel chan, SocketReaction react)
         {
             if (msg.Id != _config.Camera_Role_Message_Id) return Task.CompletedTask;
-
-            foreach (var item in _config.Camera_Role_Maping)
-            {
-                if (react.Emote.Name == item.emoji)
-                {
-                  //  chan.SendMessageAsync(item.role);
-                }
-            }
-
+            AddOrRemoveRoleOfUser(react, true);
             return Task.CompletedTask;
         }
 
         public Task ReactionRemovedEvent(Cacheable<IUserMessage, ulong> msg, ISocketMessageChannel chan, SocketReaction react)
         {
             if (msg.Id != _config.Camera_Role_Message_Id) return Task.CompletedTask;
+            AddOrRemoveRoleOfUser(react, false);
             return Task.CompletedTask;
         }
 
@@ -52,12 +46,32 @@ namespace KenR_LeicaBot.Services
                 if (!message.Reactions.ContainsKey(emoji))
                 {
                     message.AddReactionAsync(emoji);
+                    Thread.Sleep(1000);
                 }
-
-                Thread.Sleep(1000);
             }
 
             return Task.CompletedTask;
+        }
+        private void AddOrRemoveRoleOfUser(SocketReaction react, bool add)
+        {
+            foreach (var item in _config.Camera_Role_Maping)
+            {
+                if (react.Emote.Name == item.emoji)
+                {
+                    var role = _discord.GetGuild(_config.Leica_Discord_Id).Roles.FirstOrDefault(x => x.Name == item.role);
+
+                    if (role == null) return;
+
+                    if (add)
+                    {
+                        (react.User.Value as SocketGuildUser).AddRoleAsync(role);
+                    }
+                    else
+                    {
+                        (react.User.Value as SocketGuildUser).RemoveRoleAsync(role);
+                    }
+                }
+            }
         }
     }
 }
