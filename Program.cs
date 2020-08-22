@@ -1,6 +1,7 @@
 ﻿using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
+using KenR_LeicaBot.Data;
 using KenR_LeicaBot.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -18,13 +19,6 @@ namespace KenR_LeicaBot
 
         public async Task MainAsync()
         {
-            IConfiguration Configuration = new ConfigurationBuilder()
-            .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
-            .Build();
-
-
-            Environment.SetEnvironmentVariable("token", Configuration["API_token"]);
-
             using (var services = ConfigureServices())
             {
                 var client = services.GetRequiredService<DiscordSocketClient>();
@@ -32,13 +26,17 @@ namespace KenR_LeicaBot
                 client.Log += LogAsync;
                 services.GetRequiredService<CommandService>().Log += LogAsync;
 
-                await client.LoginAsync(TokenType.Bot, Environment.GetEnvironmentVariable("token"));
+                var token = services.GetService<AppConfig>().API_token;
+
+                await client.LoginAsync(TokenType.Bot, token);
                 await client.StartAsync();
 
                 await services.GetRequiredService<CommandHandlingService>().InitializeAsync();
 
-                client.ReactionAdded += RoleService.ReactionAddedEvent;
-                client.ReactionRemoved += RoleService.ReactionRemovedEvent;
+                var rs = services.GetService<RoleService>();
+                client.ReactionAdded += rs.ReactionAddedEvent;
+                client.ReactionRemoved += rs.ReactionRemovedEvent;
+
                 await Task.Delay(Timeout.Infinite);
             }
         }
@@ -52,12 +50,22 @@ namespace KenR_LeicaBot
 
         private ServiceProvider ConfigureServices()
         {
+            IConfiguration Configuration = new ConfigurationBuilder()
+            .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+            .Build();
+
+            var appConf = new AppConfig();
+            Configuration.Bind(appConf);  
+
             return new ServiceCollection()
                 .AddSingleton<DiscordSocketClient>()
                 .AddSingleton<CommandService>()
                 .AddSingleton<CommandHandlingService>()
                 .AddSingleton<ChannelPurgeService>()
+                .AddSingleton<RoleService>()
+                .AddSingleton(appConf)
                 .BuildServiceProvider();
+
         }
     }
 }
