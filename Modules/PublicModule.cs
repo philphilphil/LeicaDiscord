@@ -48,7 +48,7 @@ namespace KenR_LeicaBot.Modules
         {
             //security feature to not accidentally purge the wrong channels... 
             List<string> purgableChannels = new List<string>(); //TODO: add this list to config/database
-            purgableChannels.Add("bot");
+            purgableChannels.Add("botdebug");
             purgableChannels.Add("gallery");
             purgableChannels.Add("your-best-photos");
 

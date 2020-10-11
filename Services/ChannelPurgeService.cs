@@ -23,8 +23,11 @@ namespace KenR_LeicaBot.Services
             int countSkipped = 0;
 
             // var messages = await msg.Channel.GetMessagesAsync(100);
-            foreach (IUserMessage message in messages)
+            foreach (IMessage message in messages)
             {
+                //only perform for usermessages
+                if (!(message is IUserMessage)) continue;
+
                 //Skip messages with Attachments and special links. Skip messages younger then 2 days.
                 if (message.Attachments.Count > 0 || ContentInAllowList(message.Content) || message.CreatedAt > DateTime.Now.AddDays(-2))
                 {
