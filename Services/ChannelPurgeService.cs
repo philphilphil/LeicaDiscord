@@ -11,16 +11,30 @@ namespace KenR_LeicaBot.Services
 {
     public class ChannelPurgeService
     {
-        public async Task PurgeAsync(SocketCommandContext context, string channel)
+        public async Task PurgeAsync(SocketCommandContext context)
+        {
+            await context.Channel.SendMessageAsync($"Starting the purge..");
+
+            List<string> purgeChannels = new List<string>(); //TODO: add this list to config/database
+            purgeChannels.Add("gallery");
+            purgeChannels.Add("your-best-photos");
+
+            foreach (var channel in purgeChannels)
+            {
+                await PurgeChannel(context, channel);
+            }
+        }
+
+        public async Task PurgeChannel(SocketCommandContext context, string channel)
         {
             var chan = context.Guild.TextChannels.Where(x => x.Name == channel).FirstOrDefault();
 
             if (chan == null) return;
 
-            var messages = await chan.GetMessagesAsync(10000).FlattenAsync();
+            var filteredMessages = new List<IMessage>();
+            var messages = await chan.GetMessagesAsync(2000).FlattenAsync();
 
             int countDeleted = 0;
-            int countSkipped = 0;
 
             // var messages = await msg.Channel.GetMessagesAsync(100);
             foreach (IMessage message in messages)
@@ -31,15 +45,17 @@ namespace KenR_LeicaBot.Services
                 //Skip messages with Attachments and special links. Skip messages younger then 2 days.
                 if (message.Attachments.Count > 0 || ContentInAllowList(message.Content) || message.CreatedAt > DateTime.Now.AddDays(-2))
                 {
-                    countSkipped++;
                     continue;
                 }
 
                 countDeleted++;
-                await message.DeleteAsync(); 
-            }
+                await message.DeleteAsync();
+            };
 
-            await context.Channel.SendMessageAsync($"Deleted {countDeleted} and skipped {countSkipped} Messages in channel {channel}");
+            // somehow doesnt work i dont know why, messages are not older than 14 days...
+            // await (context.Channel as ITextChannel).DeleteMessagesAsync(filteredMessages);
+
+            await context.Channel.SendMessageAsync($"Deleted {countDeleted} messages in {channel}");
         }
 
         private bool ContentInAllowList(string content)
