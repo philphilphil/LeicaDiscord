@@ -63,6 +63,7 @@ namespace KenR_LeicaBot
                 .AddSingleton<CommandService>()
                 .AddSingleton<CommandHandlingService>()
                 .AddSingleton<ChannelPurgeService>()
+                .AddSingleton<KenRQuoteService>()
                 .AddSingleton<RoleService>()
                 .AddSingleton(appConf)
                 .BuildServiceProvider();

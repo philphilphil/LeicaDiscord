@@ -10,7 +10,7 @@ using KenR_LeicaBot.Services;
 namespace KenR_LeicaBot.Modules
 {
     // Modules must be public and inherit from an IModuleBase
-    public class PublicModule : ModuleBase<SocketCommandContext>
+    public class AdminCommandsModule : ModuleBase<SocketCommandContext>
     {
         // Dependency Injection will fill this value in for us
         public ChannelPurgeService ChannelPurgeService { get; set; }
@@ -29,14 +29,6 @@ namespace KenR_LeicaBot.Modules
              {
                  await ChannelPurgeService.PurgeAsync(this.Context);
              });
-        }
-
-        // Get info on a user, or the user who invoked the command if one is not specified
-        [Command("userinfo")]
-        public async Task UserInfoAsync(IUser user = null)
-        {
-            user = user ?? Context.User;
-            await ReplyAsync(user.ToString());
         }
     }
 }
