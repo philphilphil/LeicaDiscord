@@ -15,6 +15,10 @@ namespace KenR_LeicaBot.Modules
         // Dependency Injection will fill this value in for us
         public KenRQuoteService KenRQuoteService { get; set; }
 
+        [Command("50mm")]
+        public Task PingAsync()
+            => ReplyAsync("LEICA 50mm f/2 SUMMICRON-M - There is no better 50mm lens on Earth, or anywhere.");
+
         [Command("kenr")]
         public async Task KenRQuote()
         {

@@ -30,7 +30,8 @@ namespace KenR_LeicaBot.Services
 
         private string GetRandomQuoteFromTwitter()
         {
-            throw new NotImplementedException();
+            return "bla";
+            //throw new NotImplementedException();
         }
     }
 }
