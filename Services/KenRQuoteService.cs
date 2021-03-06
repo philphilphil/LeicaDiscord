@@ -9,6 +9,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.IO;
 
 namespace KenR_LeicaBot.Services
 {
@@ -24,14 +25,16 @@ namespace KenR_LeicaBot.Services
         }
         public async Task PostRandomQuoteAsync(SocketCommandContext context)
         {
-            var quote = GetRandomQuoteFromTwitter();
+            var quote = GetRandomQuoteFromFile();
             await context.Channel.SendMessageAsync(quote);
         }
 
-        private string GetRandomQuoteFromTwitter()
+        private string GetRandomQuoteFromFile()
         {
-            return "bla";
-            //throw new NotImplementedException();
+            var quotes = File.ReadAllLines("Databases/kenr_out_of_context_quotes.txt").ToList();
+            Random rnd = new Random();
+            int chosenQuote = rnd.Next(0, quotes.Count);
+            return quotes[chosenQuote];
         }
     }
 }
