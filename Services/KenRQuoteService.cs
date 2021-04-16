@@ -31,7 +31,7 @@ namespace KenR_LeicaBot.Services
 
         private string GetRandomQuoteFromFile()
         {
-            var quotes = File.ReadAllLines("Databases/kenr_out_of_context_quotes.txt").ToList();
+            var quotes = File.ReadAllLines("Databases/kenr_out_of_context_quotes.txt").Where(x => !string.IsNullOrWhiteSpace(x)).ToList();
             Random rnd = new Random();
             int chosenQuote = rnd.Next(0, quotes.Count);
             return quotes[chosenQuote];

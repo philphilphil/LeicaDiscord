@@ -19,7 +19,8 @@ namespace KenR_LeicaBot.Modules
         public Task PingAsync()
             => ReplyAsync("LEICA 50mm f/2 SUMMICRON-M - There is no better 50mm lens on Earth, or anywhere.");
 
-        [Command("kenr")]
+        [Command("quote")]
+        [Alias("q")]
         public async Task KenRQuote()
         {
             await Task.Run(async () =>
