@@ -352,3 +352,4 @@ MigrationBackup/
 .vscode/
 .gitignore
 appsettings.json
+Databases/kenr_out_of_context_quotes.txt
