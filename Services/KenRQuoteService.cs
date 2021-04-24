@@ -18,6 +18,8 @@ namespace KenR_LeicaBot.Services
         private readonly AppConfig _config;
         private readonly DiscordSocketClient _discord;
 
+        private const string QUOTE_DB_PATH = "Databases/kenr_out_of_context_quotes.txt";
+
         public KenRQuoteService(AppConfig config, DiscordSocketClient discord)
         {
             _config = config;
@@ -31,10 +33,17 @@ namespace KenR_LeicaBot.Services
 
         private string GetRandomQuoteFromFile()
         {
-            var quotes = File.ReadAllLines("Databases/kenr_out_of_context_quotes.txt").Where(x => !string.IsNullOrWhiteSpace(x)).ToList();
+            var quotes = File.ReadAllLines(QUOTE_DB_PATH).Where(x => !string.IsNullOrWhiteSpace(x)).ToList();
             Random rnd = new Random();
             int chosenQuote = rnd.Next(0, quotes.Count);
             return quotes[chosenQuote];
+        }
+
+        public async Task AddQuoteToFile(SocketCommandContext context, string quote)
+        {
+            File.AppendAllLines(QUOTE_DB_PATH, new[] { quote });
+            await context.Message.AddReactionAsync(new Emoji("\U00002705"));
+            //await context.Channel.SendMessageAsync("✅");
         }
     }
 }

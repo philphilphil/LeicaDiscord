@@ -28,5 +28,18 @@ namespace KenR_LeicaBot.Modules
                  await KenRQuoteService.PostRandomQuoteAsync(this.Context);
              });
         }
+
+        [Command("addquote")]
+        public async Task AddQuote(string quote)
+        {
+            if (Context.User is SocketGuildUser user)
+            {
+                // Check if the user has the requried role
+                if (user.Roles.Any(r => r.Name == "Bot Mod"))
+                {
+                    await KenRQuoteService.AddQuoteToFile(this.Context, quote);
+                }
+            }
+        }
     }
 }
