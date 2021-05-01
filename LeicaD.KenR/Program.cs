@@ -38,6 +38,9 @@ namespace KenR_LeicaBot
                 client.ReactionAdded += rs.ReactionAddedEvent;
                 client.ReactionRemoved += rs.ReactionRemovedEvent;
 
+                var mqs = services.GetService<MemberQuoteService>();
+                client.ReactionAdded += mqs.ReactionAddedEvent;
+
                 await Task.Delay(Timeout.Infinite);
             }
         }
@@ -65,6 +68,7 @@ namespace KenR_LeicaBot
                 .AddSingleton<ChannelPurgeService>()
                 .AddSingleton<KenRQuoteService>()
                 .AddSingleton<RoleService>()
+                .AddSingleton<MemberQuoteService>()
                 .AddSingleton(appConf)
                 .BuildServiceProvider();
 
