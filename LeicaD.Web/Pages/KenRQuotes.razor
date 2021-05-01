@@ -1,0 +1,19 @@
+﻿@page "/kenrquotes"
+
+@using LeicaD.Web.Data
+@inject KenRQuoteService KenRQuoteService
+
+<h4>Ken R. Quote Manager</h4>
+
+<p>Currently @quotes.Count() quotes in the Databse</p>
+
+@quotes[0].Quote;
+
+@code {
+    private KenRQuote[] quotes;
+
+    protected override async Task OnInitializedAsync()
+    {
+        quotes = await KenRQuoteService.GetQuotesAsync();
+    }
+}
