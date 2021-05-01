@@ -7,6 +7,8 @@
 
 <h1>@ViewData["Title"]</h1>
 <div asp-validation-summary="All" class="text-danger"></div>
+
+<h3>Press the button below to Log In via Discord.</h3>
 <form id="external-account" asp-page="./ExternalLogin" asp-route-returnUrl="@Model.ReturnUrl" method="post"
     class="form-horizontal">
     <div>
