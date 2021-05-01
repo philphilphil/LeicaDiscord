@@ -12,10 +12,31 @@ namespace LeicaD.Web.Data
         {
             DbFactory = _dbFactory;
         }
-        public Task<KenRQuote[]> GetQuotesAsync()
+        public async Task<KenRQuote[]> GetQuotesAsync()
         {
             using var db = DbFactory.CreateDbContext();
-            return Task.FromResult(db.KenRQuotes.ToArray());
+            return await Task.FromResult(db.KenRQuotes.ToArray());
+        }
+
+        public async Task<int> DeleteQuoteAsync(KenRQuote quote)
+        {
+            using var db = DbFactory.CreateDbContext();
+            db.Remove(quote);
+            return await db.SaveChangesAsync();
+        }
+
+        public async Task<int> UpdateQuoteAsync(KenRQuote quote)
+        {
+            using var db = DbFactory.CreateDbContext();
+            db.Update(quote);
+            return await db.SaveChangesAsync();
+        }
+
+        public async Task<int> AddQuoteAsync(KenRQuote quote)
+        {
+            using var db = DbFactory.CreateDbContext();
+            db.Add(quote);
+            return await db.SaveChangesAsync();
         }
     }
 }
