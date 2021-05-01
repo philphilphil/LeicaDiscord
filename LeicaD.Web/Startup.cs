@@ -34,20 +34,24 @@ namespace LeicaD.Web
         public void ConfigureServices(IServiceCollection services)
         {
 
-            services.AddDbContext<ApplicationDbContext>(options =>
+            services.AddDbContextFactory<ApplicationDbContext>(options =>
                 options.UseSqlite(
                    Configuration.GetConnectionString("DefaultConnection")));
+            services.AddScoped<ApplicationDbContext>(p =>
+                p.GetRequiredService<IDbContextFactory<ApplicationDbContext>>().CreateDbContext());
+            services.AddTransient<AuthenticationStateProvider, RevalidatingIdentityAuthenticationStateProvider<IdentityUser>>();
             services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = false)
+                .AddRoles<IdentityRole>()
                 .AddEntityFrameworkStores<ApplicationDbContext>();
             services.AddRazorPages();
             services.AddServerSideBlazor();
-            services.AddScoped<AuthenticationStateProvider, RevalidatingIdentityAuthenticationStateProvider<IdentityUser>>();
             services.AddDatabaseDeveloperPageExceptionFilter();
-            services.AddSingleton<WeatherForecastService>();
+            services.AddScoped<AdminUserService>();
+            services.AddScoped<KenRQuoteService>();
             services.AddAuthentication(options =>
             {
-                //   options.DefaultAuthenticateScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-                //   options.DefaultSignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                // options.DefaultAuthenticateScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                // options.DefaultSignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
                 options.DefaultChallengeScheme = "Discord";
             })
             .AddDiscord(options =>
