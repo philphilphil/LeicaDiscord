@@ -2,9 +2,8 @@
 @attribute [Authorize(Roles = "Admin")]
 
 @using LeicaD.Web.Data
+@using Microsoft.AspNetCore.Identity
 @inject AdminUserService adminUserService
-
-<h3>Users</h3>
 
 @if (users == null)
 {
@@ -12,30 +11,52 @@
 }
 else
 {
+    <h3>Users</h3>
     <table class="table">
-        <thead>
-            <tr>
-                <th>Name</th>
-                <th>Roles</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var u in users)
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Role</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var u in users)
             {
                 <tr>
                     <td>@u.Username</td>
-                    @* <td>@String.Join(", ", u.Roles)</td> *@
+                    <td>
+                        <select class="form-control selectpicker" value="@u.Role" @onchange="(item) => UpdateRole(u, item.Value.ToString())">
+                            <option>--no role--</option>
+                            @foreach (var item in roles)
+                            {
+                                <option value="@item.Name">@item.Name</option>
+                            }
+                        </select>
+                    </td>
                 </tr>
             }
         </tbody>
     </table>
+    <br />
+    <h3>Available Roles</h3>
+    <ul>
+    @foreach (var r in roles)
+        {
+            <li>@r.Name</li>
+        }
+    </ul>
 }
 
 @code {
     private User[] users;
-
+    private IdentityRole[] roles;
+    protected async void UpdateRole(User u, string newRole)
+    {
+        await adminUserService.UpdateUserRoleAsync(u, newRole);
+    }
     protected override async Task OnInitializedAsync()
     {
         users = await adminUserService.GetUsersAsync();
+        roles = await adminUserService.GetRolesAsync();
     }
 }

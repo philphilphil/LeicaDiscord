@@ -1,18 +1,20 @@
 ﻿@page "/kenrquotes"
-@attribute [Authorize(Roles = "Admin, Bot-Mod")]
+@attribute [Authorize(Roles = "Admin, Mod, BotMod")]
 @using LeicaD.Web.Data
 @inject KenRQuoteService KenRQuoteService
 @inject IJSRuntime JsRuntime
 
-<h4>Ken R. Quote Manager</h4>
-<EditForm Model="@quote" OnValidSubmit="@HandleValidSubmit">
-    <DataAnnotationsValidator />
-    <ValidationSummary />
-    <InputTextArea id="quote" @bind-Value="quote.Quote" style="width:100%" /><br />
-    <button type="submit">Add</button>
-</EditForm>
-<br />
-@quotes.Count() quotes in the Databse.
+<h2>Ken R. Quote Manager</h2>
+<AuthorizeView Roles="Admin, BotMod" Context="authContext">
+    <h5>Add</h5>
+    <EditForm Model="@quote" OnValidSubmit="@HandleValidSubmit">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+        <InputTextArea id="quote" @bind-Value="quote.Quote" style="width:100%" /><br />
+        <button type="submit">Add</button>
+    </EditForm><br />
+</AuthorizeView>
+<h5>List</h5>
 <table>
     <thead>
         <tr>
@@ -39,7 +41,7 @@
         }
     </tbody>
 </table>
-
+@quotes.Count() quotes total.
 @code {
     private KenRQuote[] quotes;
     private KenRQuote quote = new KenRQuote();

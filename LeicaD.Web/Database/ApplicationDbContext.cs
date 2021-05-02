@@ -31,7 +31,7 @@ namespace LeicaD.Web.Data
                 },
                 new IdentityRole {
                     Id = "3",
-                    Name = "Bot-Mod",
+                    Name = "BotMod",
                     NormalizedName = "BOTMOD"
                 },
                 new IdentityRole {

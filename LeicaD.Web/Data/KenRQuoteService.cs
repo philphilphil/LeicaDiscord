@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace LeicaD.Web.Data
 {
-    [Authorize(Roles = "Admin,Bot-Mod")]
+    [Authorize(Roles = "Admin,Mod,BotMod")]
     public class KenRQuoteService
     {
         private IDbContextFactory<ApplicationDbContext> DbFactory { get; set; }
