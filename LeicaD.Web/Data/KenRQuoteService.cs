@@ -1,10 +1,12 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 
 namespace LeicaD.Web.Data
 {
+    [Authorize(Roles = "Admin,Bot-Mod")]
     public class KenRQuoteService
     {
         private IDbContextFactory<ApplicationDbContext> DbFactory { get; set; }

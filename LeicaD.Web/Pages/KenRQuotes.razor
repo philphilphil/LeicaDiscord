@@ -1,5 +1,5 @@
 ﻿@page "/kenrquotes"
-
+@attribute [Authorize(Roles = "Admin, Bot-Mod")]
 @using LeicaD.Web.Data
 @inject KenRQuoteService KenRQuoteService
 @inject IJSRuntime JsRuntime
