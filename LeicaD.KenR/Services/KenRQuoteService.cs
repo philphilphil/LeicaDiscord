@@ -60,11 +60,11 @@ namespace KenR_LeicaBot.Services
             return "";
         }
 
-        public async Task AddQuoteToFile(SocketCommandContext context, string quote)
-        {
-            File.AppendAllLines(QUOTE_DB_PATH, new[] { quote });
-            await context.Message.AddReactionAsync(new Emoji("\U00002705"));
-            //await context.Channel.SendMessageAsync("✅");
-        }
+        // public async Task AddQuoteToFile(SocketCommandContext context, string quote)
+        // {
+        //     File.AppendAllLines(QUOTE_DB_PATH, new[] { quote });
+        //     await context.Message.AddReactionAsync(new Emoji("\U00002705"));
+        //     //await context.Channel.SendMessageAsync("✅");
+        // }
     }
 }
