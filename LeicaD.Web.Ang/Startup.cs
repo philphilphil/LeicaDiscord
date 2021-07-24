@@ -42,14 +42,12 @@ namespace LeicaD.Web.Ang
 
             services.AddAuthentication(options =>
             {
-                // options.DefaultAuthenticateScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-                // options.DefaultSignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
                 options.DefaultChallengeScheme = "Discord";
             }).AddIdentityServerJwt()
             .AddDiscord(options =>
             {
-                options.ClientId = "a";
-                options.ClientSecret = "b";
+                options.ClientId = Configuration["Discord:ClientId"];
+                options.ClientSecret = Configuration["Discord:ClientSecret"];
             });
             services.AddControllersWithViews();
             services.AddRazorPages();
