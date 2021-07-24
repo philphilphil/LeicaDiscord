@@ -350,8 +350,7 @@ MigrationBackup/
 .ionide/
 .DS_Store
 .vscode/
-appsettings.json
 Databases/kenr_out_of_context_quotes.txt
 Databases/kenr_out_of_context_quotes_BACKUP.txt
-appsettings.json
+*appsettings.Development.json
 app.db*
