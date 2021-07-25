@@ -10,14 +10,13 @@ using Microsoft.Extensions.Logging;
 
 namespace LeicaD.Web.Controllers
 {
-    [Authorize]
+    [Authorize(Policy = "IsAdmin")]
     [ApiController]
     [Route("[controller]")]
     public class AdminController : ControllerBase
     {
         private readonly ILogger<AdminController> _logger;
         private readonly IAdminUserService _adminService;
-
 
         public AdminController(ILogger<AdminController> logger, IAdminUserService adminUserService)
         {
@@ -28,6 +27,8 @@ namespace LeicaD.Web.Controllers
         [HttpGet]
         public IEnumerable<User> Get()
         {
+            HttpContext.User.IsInRole("Admin");
+
             return _adminService.GetUsersAsync().Result;
         }
     }

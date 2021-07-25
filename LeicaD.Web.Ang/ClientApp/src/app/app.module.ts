@@ -13,6 +13,7 @@ import { ApiAuthorizationModule } from 'src/api-authorization/api-authorization.
 import { AuthorizeGuard } from 'src/api-authorization/authorize.guard';
 import { AuthorizeInterceptor } from 'src/api-authorization/authorize.interceptor';
 import { AdminUserListComponent } from './admin-user-list/admin-user-list.component';
+import { ForbiddenComponent } from './forbidden/forbidden.component';
 
 @NgModule({
   declarations: [
@@ -21,7 +22,8 @@ import { AdminUserListComponent } from './admin-user-list/admin-user-list.compon
     HomeComponent,
     CounterComponent,
     FetchDataComponent,
-    AdminUserListComponent
+    AdminUserListComponent,
+    ForbiddenComponent
   ],
   imports: [
     BrowserModule.withServerTransition({ appId: 'ng-cli-universal' }),
@@ -33,6 +35,7 @@ import { AdminUserListComponent } from './admin-user-list/admin-user-list.compon
       { path: 'counter', component: CounterComponent },
       { path: 'fetch-data', component: FetchDataComponent, canActivate: [AuthorizeGuard] },
       { path: 'admin-user-list', component: AdminUserListComponent, canActivate: [AuthorizeGuard] },
+      { path: '403', component: ForbiddenComponent },
     ])
   ],
   providers: [

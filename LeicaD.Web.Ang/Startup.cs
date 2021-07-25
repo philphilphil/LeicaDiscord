@@ -12,6 +12,14 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using LeicaD.Web.Services;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using System.Threading.Tasks;
+using IdentityServer4.Services;
+using System.Collections.Generic;
+using IdentityServer4.Models;
+using System.Security.Claims;
+using IdentityModel;
+using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 
 namespace LeicaD.Web.Ang
 {
@@ -33,29 +41,48 @@ namespace LeicaD.Web.Ang
 
             services.AddDatabaseDeveloperPageExceptionFilter();
 
-            services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true)
+            services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = false)
                 .AddRoles<IdentityRole>()
                 .AddEntityFrameworkStores<ApplicationDbContext>();
 
+            services.AddTransient<IProfileService, ProfileService>();
+
             services.AddIdentityServer()
-                .AddApiAuthorization<ApplicationUser, ApplicationDbContext>();
+                .AddApiAuthorization<ApplicationUser, ApplicationDbContext>()
+                .AddProfileService<ProfileService>();
 
             services.AddAuthentication(options =>
             {
-                options.DefaultChallengeScheme = "Discord";
-            }).AddIdentityServerJwt()
-            .AddDiscord(options =>
+                options.DefaultScheme = "Discord";
+                options.DefaultChallengeScheme = OpenIdConnectDefaults.AuthenticationScheme;
+                options.DefaultForbidScheme = "Discord";
+            })
+                .AddIdentityServerJwt()
+                .AddDiscord(options =>
+                {
+                    //options.SignInScheme = "IdentityServerJwt";
+                    options.ClientId = Configuration["Discord:ClientId"];
+                    options.ClientSecret = Configuration["Discord:ClientSecret"];
+                    //options.Scope.Add("guilds");
+                });
+
+            services.AddAuthorization(options =>
             {
-                options.ClientId = Configuration["Discord:ClientId"];
-                options.ClientSecret = Configuration["Discord:ClientSecret"];
+                options.AddPolicy("IsAdmin", policy =>
+                {
+                    policy.RequireClaim(ClaimTypes.Role, "Admin");
+                });
             });
+
             services.AddControllersWithViews();
             services.AddRazorPages();
+
             // In production, the Angular files will be served from this directory
             services.AddSpaStaticFiles(configuration =>
             {
                 configuration.RootPath = "ClientApp/dist";
             });
+
             services.AddScoped<IAdminUserService, AdminUserService>();
             //services.AddScoped<KenRQuoteService>();
         }
@@ -107,6 +134,36 @@ namespace LeicaD.Web.Ang
                     spa.UseAngularCliServer(npmScript: "start");
                 }
             });
+        }
+    }
+
+    public class ProfileService : IProfileService
+    {
+        protected UserManager<ApplicationUser> mUserManager;
+
+        public ProfileService(UserManager<ApplicationUser> userManager)
+        {
+            mUserManager = userManager;
+        }
+
+        public async Task GetProfileDataAsync(ProfileDataRequestContext context)
+        {
+            ApplicationUser user = await mUserManager.GetUserAsync(context.Subject);
+
+            IList<string> roles = await mUserManager.GetRolesAsync(user);
+
+            IList<Claim> roleClaims = new List<Claim>();
+            foreach (string role in roles)
+            {
+                roleClaims.Add(new Claim(ClaimTypes.Role, role));
+            }
+
+            context.IssuedClaims.AddRange(roleClaims);
+        }
+
+        public Task IsActiveAsync(IsActiveContext context)
+        {
+            return Task.CompletedTask;
         }
     }
 }

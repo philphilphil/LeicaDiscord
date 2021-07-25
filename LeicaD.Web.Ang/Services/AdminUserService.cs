@@ -24,8 +24,24 @@ namespace LeicaD.Web.Services
         }
         public async Task<User[]> GetUsersAsync()
         {
+
+            // var newRole = "Admin";
+
+            // var user2 = _userManager.FindByNameAsync("baum@bla.de").Result;
+
+            // //remove all old roles first (if any)
+            // var oldRoles = _userManager.GetRolesAsync(user2).Result;
+            // foreach (var role in oldRoles)
+            // {
+            //     await _userManager.RemoveFromRoleAsync(user2, role);
+            // }
+
+            // await _userManager.AddToRoleAsync(user2, newRole);
+
+
+
             List<User> usersDto = new List<User>();
- 
+
             var users = await _db.Users.ToListAsync();
 
             foreach (var user in users)
