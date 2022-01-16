@@ -21,18 +21,18 @@ namespace KenR_LeicaBot.Services
             _config = config;
             _discord = discord;
         }
-        public Task ReactionAddedEvent(Cacheable<IUserMessage, ulong> msg, ISocketMessageChannel chan, SocketReaction react)
+        public async Task ReactionAddedEvent(Cacheable<IUserMessage, ulong> msg, Cacheable<IMessageChannel, ulong> chan, SocketReaction react)
         {
-            if (msg.Id != _config.Camera_Role_Message_Id) return Task.CompletedTask;
-            AddOrRemoveRoleOfUser(react, true);
-            return Task.CompletedTask;
+            if (msg.Id != _config.Camera_Role_Message_Id) return;
+            await AddOrRemoveRoleOfUser(react, true);
+            return;
         }
 
-        public Task ReactionRemovedEvent(Cacheable<IUserMessage, ulong> msg, ISocketMessageChannel chan, SocketReaction react)
+        public async Task ReactionRemovedEvent(Cacheable<IUserMessage, ulong> msg, Cacheable<IMessageChannel, ulong>  chan, SocketReaction react)
         {
-            if (msg.Id != _config.Camera_Role_Message_Id) return Task.CompletedTask;
-            AddOrRemoveRoleOfUser(react, false);
-            return Task.CompletedTask;
+            if (msg.Id != _config.Camera_Role_Message_Id) return;
+            await AddOrRemoveRoleOfUser(react, false);
+            return;
         }
 
         internal Task SetupRoleMessage()
@@ -52,7 +52,7 @@ namespace KenR_LeicaBot.Services
 
             return Task.CompletedTask;
         }
-        private void AddOrRemoveRoleOfUser(SocketReaction react, bool add)
+        private async Task AddOrRemoveRoleOfUser(SocketReaction react, bool add)
         {
             foreach (var item in _config.Camera_Role_Maping)
             {
@@ -64,11 +64,11 @@ namespace KenR_LeicaBot.Services
 
                     if (add)
                     {
-                        (react.User.Value as SocketGuildUser).AddRoleAsync(role);
+                        await (react.User.Value as SocketGuildUser).AddRoleAsync(role);
                     }
                     else
                     {
-                        (react.User.Value as SocketGuildUser).RemoveRoleAsync(role);
+                        await (react.User.Value as SocketGuildUser).RemoveRoleAsync(role);
                     }
                 }
             }

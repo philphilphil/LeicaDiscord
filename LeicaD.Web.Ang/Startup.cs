@@ -72,6 +72,18 @@ namespace LeicaD.Web.Ang
                 {
                     policy.RequireClaim(ClaimTypes.Role, "Admin");
                 });
+                options.AddPolicy("IsBotMod", policy =>
+                {
+                    policy.RequireClaim(ClaimTypes.Role, "BotMod");
+                });
+                options.AddPolicy("IsMod", policy =>
+                {
+                    policy.RequireClaim(ClaimTypes.Role, "Mod");
+                });
+                options.AddPolicy("IsUser", policy =>
+                {
+                    policy.RequireClaim(ClaimTypes.Role, "User");
+                });
             });
 
             services.AddControllersWithViews();

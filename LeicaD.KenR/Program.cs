@@ -39,7 +39,12 @@ namespace KenR_LeicaBot
                 client.ReactionRemoved += rs.ReactionRemovedEvent;
 
                 var mqs = services.GetService<MemberQuoteService>();
-                client.ReactionAdded += mqs.ReactionAddedEvent;
+                // client.ReactionAdded += mqs.ReactionAddedEvent;
+
+                // var myTimer = new System.Timers.Timer(10 * 1000); 
+                // var ps = services.GetService<ChannelPurgeService>;
+                // myTimer.Elapsed += new ElapsedEventHandler(ps.PurgeTestAsync);
+                // myTimer.Start();
 
                 await Task.Delay(Timeout.Infinite);
             }
@@ -56,10 +61,11 @@ namespace KenR_LeicaBot
         {
             IConfiguration Configuration = new ConfigurationBuilder()
             .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+            .AddJsonFile("appsettings.Development.json", optional: true)
             .Build();
 
             var appConf = new AppConfig();
-            Configuration.Bind(appConf);  
+            Configuration.Bind(appConf);
 
             return new ServiceCollection()
                 .AddSingleton<DiscordSocketClient>()

@@ -63,6 +63,7 @@ namespace KenR_LeicaBot.Services
             List<string> allowedStrings = new List<string>(); //TODO: add this list to config/database
             allowedStrings.Add("instagram.com");
             allowedStrings.Add("imgur.com");
+            allowedStrings.Add("cdn.discordapp.com");
             allowedStrings.Add("media.jipvankuijk.nl"); // Jip's CDN. Need todo the todo soon ;)
 
             foreach (var item in allowedStrings)
