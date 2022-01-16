@@ -30,11 +30,11 @@ namespace KenR_LeicaBot.Services
         }
         public async Task PostRandomQuoteAsync(SocketCommandContext context)
         {
-            var quote = GetRandomQuoteFromDb();
+            var quote = await GetRandomQuoteFromDbAsync();
             await context.Channel.SendMessageAsync(quote);
         }
 
-        private string GetRandomQuoteFromDb()
+        private async Task<string> GetRandomQuoteFromDbAsync()
         {
             var options = new DbContextOptionsBuilder<ApplicationDbContext>().UseSqlite(_config.ConnectionString).Options;
 
@@ -46,7 +46,7 @@ namespace KenR_LeicaBot.Services
                 { //all quotes posted, reset
                     var allQuotes = db.KenRQuotes.ToList();
                     allQuotes.ForEach(x => x.LastPosted = null);
-                    db.SaveChangesAsync();
+                    await db.SaveChangesAsync();
                     quotes = db.KenRQuotes.AsQueryable().Where(x => x.LastPosted == null).ToList();
                 }
 
@@ -54,7 +54,7 @@ namespace KenR_LeicaBot.Services
                 int chosenQuote = rnd.Next(0, quotes.Count());
                 var quote = quotes[chosenQuote];
                 quote.LastPosted = DateTime.Now;
-                db.SaveChangesAsync();
+                await db.SaveChangesAsync();
                 return quote.Quote;
             }
         }

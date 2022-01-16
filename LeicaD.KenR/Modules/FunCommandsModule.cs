@@ -9,24 +9,19 @@ using KenR_LeicaBot.Services;
 
 namespace KenR_LeicaBot.Modules
 {
-    // Modules must be public and inherit from an IModuleBase
     public class FunCommandsModule : ModuleBase<SocketCommandContext>
     {
-        // Dependency Injection will fill this value in for us
         public KenRQuoteService KenRQuoteService { get; set; }
 
         [Command("50mm")]
-        public Task PingAsync()
+        public Task Best50Async()
             => ReplyAsync("LEICA 50mm f/2 SUMMICRON-M - There is no better 50mm lens on Earth, or anywhere.");
 
-        [Command("quote")]
+        [Command("quote", true)]
         [Alias("q")]
-        public async Task KenRQuote()
+        public async Task KenRQuoteAsync()
         {
-            await Task.Run(async () =>
-             {
-                 await KenRQuoteService.PostRandomQuoteAsync(this.Context);
-             });
+            await KenRQuoteService.PostRandomQuoteAsync(this.Context);
         }
 
         // [Command("addquote")]
