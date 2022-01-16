@@ -60,7 +60,7 @@ namespace KenR_LeicaBot
         private ServiceProvider ConfigureServices()
         {
             IConfiguration Configuration = new ConfigurationBuilder()
-            .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+            .AddJsonFile("appsettings.json", optional: false)
             .AddJsonFile("appsettings.Development.json", optional: true)
             .Build();
 
