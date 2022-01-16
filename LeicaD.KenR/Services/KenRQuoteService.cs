@@ -57,7 +57,6 @@ namespace KenR_LeicaBot.Services
                 db.SaveChangesAsync();
                 return quote.Quote;
             }
-            return "";
         }
 
         // public async Task AddQuoteToFile(SocketCommandContext context, string quote)

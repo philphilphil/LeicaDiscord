@@ -9,6 +9,7 @@ using System;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Timers;
 
 namespace KenR_LeicaBot
 {
@@ -38,12 +39,9 @@ namespace KenR_LeicaBot
                 client.ReactionAdded += rs.ReactionAddedEvent;
                 client.ReactionRemoved += rs.ReactionRemovedEvent;
 
-                var mqs = services.GetService<MemberQuoteService>();
-                // client.ReactionAdded += mqs.ReactionAddedEvent;
-
-                // var myTimer = new System.Timers.Timer(10 * 1000); 
-                // var ps = services.GetService<ChannelPurgeService>;
-                // myTimer.Elapsed += new ElapsedEventHandler(ps.PurgeTestAsync);
+                // var myTimer = new System.Timers.Timer(TimeSpan.FromSeconds(5).TotalMilliseconds); 
+                // var ps = services.GetService<ChannelPurgeService>();
+                // myTimer.Elapsed += new ElapsedEventHandler(ps.OnTimedEvent);
                 // myTimer.Start();
 
                 await Task.Delay(Timeout.Infinite);
@@ -74,7 +72,6 @@ namespace KenR_LeicaBot
                 .AddSingleton<ChannelPurgeService>()
                 .AddSingleton<KenRQuoteService>()
                 .AddSingleton<RoleService>()
-                .AddSingleton<MemberQuoteService>()
                 .AddSingleton(appConf)
                 .BuildServiceProvider();
 

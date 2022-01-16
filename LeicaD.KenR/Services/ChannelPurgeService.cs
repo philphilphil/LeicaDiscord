@@ -1,5 +1,6 @@
 ﻿using Discord;
 using Discord.Commands;
+using Discord.WebSocket;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -11,7 +12,12 @@ namespace KenR_LeicaBot.Services
 {
     public class ChannelPurgeService
     {
-        public async Task PurgeAsync(SocketCommandContext context)
+        // public void OnTimedEvent(Object source, System.Timers.ElapsedEventArgs e)
+        // {
+        //     Console.WriteLine("timer");
+        // }
+
+        public async Task PurgeAsync(SocketCommandContext context = null)
         {
             await context.Channel.SendMessageAsync($"Starting the purge..");
 
