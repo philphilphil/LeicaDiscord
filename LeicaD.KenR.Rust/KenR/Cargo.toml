@@ -3,9 +3,6 @@ name = "ken_r"
 version = "0.1.0"
 edition = "2021"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-# serenity = { version = "0.10", default-features = false, features = ["client", "gateway", "rustls_backend", "model"] }
-
 [dependencies]
 dotenv = "0.15"
 tracing = "0.1.23"
