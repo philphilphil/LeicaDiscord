@@ -1,4 +1,24 @@
 use rusqlite::{Connection, Result};
+use serenity::framework::standard::{macros::command, CommandResult};
+use serenity::model::prelude::*;
+use serenity::prelude::*;
+
+#[command]
+#[aliases("q")]
+async fn quote(ctx: &Context, msg: &Message) -> CommandResult {
+    match get_quote() {
+        Ok(quote) => {
+            if let Err(why) = msg.channel_id.say(&ctx.http, quote).await {
+                println!("Error sending message: {:?}", why);
+            }
+        }
+        Err(quote) => {
+            println!("Issue getting data from db: {:?}", quote);
+        }
+    }
+
+    Ok(())
+}
 
 #[derive(Debug)]
 struct KenRQuote {
@@ -6,7 +26,7 @@ struct KenRQuote {
     quote: String,
 }
 
-pub fn get_quote() -> Result<String, rusqlite::Error> {
+fn get_quote() -> Result<String, rusqlite::Error> {
     let path = "db/app.db";
     let conn = Connection::open(path)?;
 
