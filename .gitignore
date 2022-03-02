@@ -355,3 +355,4 @@ Databases/kenr_out_of_context_quotes_BACKUP.txt
 *appsettings.Development.json
 app.db*
 LeicaD.KenR.Rust/KenR/.env
+LeicaD.KenR.Rust/.env
