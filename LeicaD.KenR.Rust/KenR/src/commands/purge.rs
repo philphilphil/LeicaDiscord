@@ -1,24 +1,34 @@
+use std::env;
+
 use chrono::Utc;
 use serenity::{
-    framework::standard::{
-        macros::{command},
-        CommandResult,
-    },
+    framework::standard::{macros::command, CommandResult},
+    futures::StreamExt,
     model::{channel::Message, id::ChannelId},
-    prelude::*, futures::StreamExt,
+    prelude::*,
 };
-use tracing::{error};
+use tracing::error;
 
 #[command]
 async fn purge(ctx: &Context, msg: &Message) -> CommandResult {
-    let purge_count = purge_channel(ChannelId(810536807761707121), ctx).await;
+    //  let purge_chan_ids = env::vars().filter(|v| v.0.starts_with("CHANNEL_PURGE_ID"));
+
+    // for (_, channelid) in purge_chan_ids {
+    let purge_count = purge_channel("810536807761707121", ctx).await;
+
+    //let purge_count = purge_channel(&channelid, ctx).await;
     let delete_count_msg = format!("Deleted {} messages in channel {}", purge_count, "");
     msg.channel_id.say(&ctx.http, delete_count_msg).await?;
+    // }
+
     Ok(())
 }
 
-async fn purge_channel(channel_id: ChannelId, ctx: &Context) -> u64 {
+async fn purge_channel(channel_id: &str, ctx: &Context) -> u64 {
+    let channel_id: u64 = channel_id.parse().expect("Error parsing purge channel id.");
+    let channel_id = ChannelId(channel_id);
     let mut count_deleted = 0;
+
     let mut messages = channel_id.messages_iter(&ctx).boxed();
 
     while let Some(message_result) = messages.next().await {

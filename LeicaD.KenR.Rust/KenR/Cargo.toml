@@ -3,6 +3,14 @@ name = "ken_r"
 version = "0.1.0"
 edition = "2021"
 
+[[bin]]
+name = "kenr_bot"
+path = "src/bot.rs"
+
+[[bin]]
+name = "some-name"
+path = "src/gallery_cleaner.rs"
+
 [dependencies]
 dotenv = "0.15"
 tracing = "0.1.23"
