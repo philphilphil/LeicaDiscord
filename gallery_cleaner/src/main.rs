@@ -10,7 +10,7 @@ use tracing::error;
 
 #[tokio::main]
 async fn main() {
-    dotenv::dotenv().expect("Failed to load .env file");
+    dotenv::from_filename("./.env").expect("Failed to load .env file");
     let token = env::var("DISCORD_TOKEN").expect("Expected token in env.");
     let admin_channel = str_to_channel_id(
         &env::var("ADMIN_CHANNEL_ID").expect("Expected admin channel id in env."),
@@ -36,7 +36,10 @@ async fn purge_channel(channel_id: &str, ctx: &Http) -> u64 {
     while let Some(message_result) = messages.next().await {
         match message_result {
             Ok(message) => {
-                if message.attachments.len() == 0 && message_older_then_one_day(&message) {
+                if message.attachments.len() == 0
+                    && message_older_then_one_day(&message)
+                    && message_not_cdn(&message)
+                {
                     match message.delete(&ctx).await {
                         Ok(_) => count_deleted += 1,
                         Err(error) => {
@@ -49,6 +52,24 @@ async fn purge_channel(channel_id: &str, ctx: &Http) -> u64 {
         }
     }
     count_deleted
+}
+
+fn message_not_cdn(msg: &Message) -> bool {
+    // TODO: move to config
+    let allowed_urls = vec![
+        "instagram.com",
+        "imgur.com",
+        "cdn.discordapp.com",
+        "media.jipvankuijk.nl",
+    ];
+
+    for url in allowed_urls {
+        if msg.content.contains(url) {
+            return false;
+        }
+    }
+
+    true
 }
 
 fn message_older_then_one_day(msg: &Message) -> bool {
