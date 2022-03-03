@@ -2,7 +2,10 @@ use chrono::Utc;
 use serenity::{
     futures::StreamExt,
     http::Http,
-    model::{channel::Message, id::ChannelId},
+    model::{
+        channel::{GuildChannel, Message},
+        id::ChannelId,
+    },
     prelude::*,
 };
 use std::env;
@@ -21,17 +24,29 @@ async fn main() {
     let ctx = &client.cache_and_http.http;
 
     for (_, channelid) in channels_to_clean {
-        let purge_count = purge_channel(&channelid, ctx).await;
-        let delete_count_msg = format!("Deleted {} messages in channel {}", purge_count, channelid);
+        let channel = str_to_channel_id(&channelid);
+        let channel_name = channel
+            .to_channel(&client.cache_and_http)
+            .await
+            .unwrap()
+            .guild()
+            .unwrap()
+            .name; // for some reason .name() on ChannelId does not work.
+
+        let purge_count = purge_channel(&channel, ctx).await;
+
+        let delete_count_msg = format!(
+            "Deleted {} messages in channel {}",
+            purge_count, channel_name
+        );
         admin_channel.say(ctx, delete_count_msg).await.unwrap();
     }
 }
 
-async fn purge_channel(channel_id: &str, ctx: &Http) -> u64 {
-    let channel_id = str_to_channel_id(channel_id);
+async fn purge_channel(channel: &ChannelId, ctx: &Http) -> u64 {
     let mut count_deleted = 0;
 
-    let mut messages = channel_id.messages_iter(&ctx).boxed();
+    let mut messages = channel.messages_iter(&ctx).boxed();
 
     while let Some(message_result) = messages.next().await {
         match message_result {
