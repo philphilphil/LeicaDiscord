@@ -13,7 +13,7 @@ use tracing::error;
 
 #[tokio::main]
 async fn main() {
-    dotenv::from_filename("./.env").expect("Failed to load .env file");
+    dotenv::from_filename("./.env.live").expect("Failed to load .env file");
     let token = env::var("DISCORD_TOKEN").expect("Expected token in env.");
     let admin_channel = str_to_channel_id(
         &env::var("ADMIN_CHANNEL_ID").expect("Expected admin channel id in env."),
