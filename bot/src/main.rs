@@ -1,87 +1,132 @@
-mod commands;
+use std::{env, ops::Add};
 
-use std::{collections::HashSet, env, sync::Arc};
-
-use commands::{quote::*, meta::*, owner::*};
 use serenity::{
     async_trait,
-    client::bridge::gateway::ShardManager,
-    framework::{standard::macros::group, StandardFramework},
-    http::Http,
-    model::{event::ResumedEvent, gateway::Ready},
+    builder::{CreateApplicationCommand, CreateApplicationCommandOption},
+    model::{
+        gateway::Ready,
+        id::{CommandId, GuildId},
+        interactions::{
+            application_command::{
+                ApplicationCommand, ApplicationCommandInteractionDataOptionValue,
+                ApplicationCommandOptionType,
+            },
+            Interaction, InteractionResponseType,
+        },
+    },
     prelude::*,
 };
-use tracing::{error, info};
-
-pub struct ShardManagerContainer;
-
-impl TypeMapKey for ShardManagerContainer {
-    type Value = Arc<Mutex<ShardManager>>;
-}
 
 struct Handler;
 
 #[async_trait]
 impl EventHandler for Handler {
-    async fn ready(&self, _: Context, ready: Ready) {
-        info!("Connected as {}", ready.user.name);
+    async fn interaction_create(&self, ctx: Context, interaction: Interaction) {
+        if let Interaction::ApplicationCommand(command) = interaction {
+            let content = match command.data.name.as_str() {
+                "role" => "Hey, I'm alive!".to_string(),
+                _ => "not implemented :(".to_string(),
+            };
+
+            if let Err(why) = command
+                .create_interaction_response(&ctx.http, |response| {
+                    response
+                        .kind(InteractionResponseType::ChannelMessageWithSource)
+                        .interaction_response_data(|message| message.content(content))
+                })
+                .await
+            {
+                println!("Cannot respond to slash command: {}", why);
+            }
+        }
     }
 
-    async fn resume(&self, _: Context, _: ResumedEvent) {
-        info!("Resumed");
+    async fn ready(&self, ctx: Context, ready: Ready) {
+        println!("{} is connected!", ready.user.name);
+
+        let guild_id = GuildId(
+            env::var("GUILD_ID")
+                .expect("Expected GUILD_ID in environment")
+                .parse()
+                .expect("GUILD_ID must be an integer"),
+        );
+
+        let _commands = GuildId::set_application_commands(&guild_id, &ctx.http, |commands| {
+            commands.create_application_command(|command| {
+                command
+                    .name("role")
+                    .description("Assign (or unassign) yourself camera system roles. If you had the role it will be unassigned.")
+                    .create_option(|option| {
+                        option
+                            .name("role")
+                            .description("The role to assign or unassign.")
+                            .kind(ApplicationCommandOptionType::String)
+                            .required(true)
+                            .add_string_choice("M Digital", "M-Digi")
+                            .add_string_choice("M Film", "M-Film")
+                            .add_string_choice("Q", "Q")
+                            .add_string_choice("SL", "SL")
+                            .add_string_choice("R", "R")
+                            .add_string_choice("S", "S")
+                            .add_string_choice("*-Lux/X/TL", "*-Lux/X/TL")
+                            .add_string_choice("Sofort", "Sofort")
+                            .add_string_choice("Barnack/LTM", "Barnack")
+                    })
+                    .create_option(|option| {
+                        option
+                            .name("role2")
+                            .description("The role to assign or unassign.")
+                            .kind(ApplicationCommandOptionType::String)
+                            .required(false)
+                            .add_string_choice("M Digital", "M-Digi")
+                            .add_string_choice("M Film", "M-Film")
+                            .add_string_choice("Q", "Q")
+                            .add_string_choice("SL", "SL")
+                            .add_string_choice("R", "R")
+                            .add_string_choice("S", "S")
+                            .add_string_choice("*-Lux/X/TL", "*-Lux/X/TL")
+                            .add_string_choice("Sofort", "Sofort")
+                            .add_string_choice("Barnack/LTM", "Barnack")
+                    })
+                    .create_option(|option| {
+                        option
+                            .name("role3")
+                            .description("The role to assign or unassign.")
+                            .kind(ApplicationCommandOptionType::String)
+                            .required(false)
+                            .add_string_choice("M Digital", "M-Digi")
+                            .add_string_choice("M Film", "M-Film")
+                            .add_string_choice("Q", "Q")
+                            .add_string_choice("SL", "SL")
+                            .add_string_choice("R", "R")
+                            .add_string_choice("S", "S")
+                            .add_string_choice("*-Lux/X/TL", "*-Lux/X/TL")
+                            .add_string_choice("Sofort", "Sofort")
+                            .add_string_choice("Barnack/LTM", "Barnack")
+                    })
+            })
+        })
+        .await;
     }
 }
 
-#[group]
-#[commands(quote, ping, quit)]
-struct General;
-
 #[tokio::main]
 async fn main() {
-    // This will load the environment variables located at `./.env`
-    dotenv::dotenv().expect("Failed to load .env file");
-
-    // Initialize the logger to use environment variables.
-    tracing_subscriber::fmt::init();
-
+    dotenv::from_filename("./.env").expect("Failed to load .env file");
     let token = env::var("DISCORD_TOKEN").expect("Expected a token in the environment");
 
-    let http = Http::new_with_token(&token);
+    let application_id: u64 = env::var("APPLICATION_ID")
+        .expect("Expected an application id in the environment")
+        .parse()
+        .expect("application id is not a valid id");
 
-    // We will fetch your bot's owners and id
-    let (owners, _bot_id) = match http.get_current_application_info().await {
-        Ok(info) => {
-            let mut owners = HashSet::new();
-            owners.insert(info.owner.id);
-
-            (owners, info.id)
-        },
-        Err(why) => panic!("Could not access application info: {:?}", why),
-    };
-
-    // Create the framework
-    let framework =
-        StandardFramework::new().configure(|c| c.owners(owners).prefix("!")).group(&GENERAL_GROUP);
-
-    let mut client = Client::builder(&token)
-        .framework(framework)
+    let mut client = Client::builder(token)
         .event_handler(Handler)
+        .application_id(application_id)
         .await
-        .expect("Err creating client");
-
-    {
-        let mut data = client.data.write().await;
-        data.insert::<ShardManagerContainer>(client.shard_manager.clone());
-    }
-
-    let shard_manager = client.shard_manager.clone();
-
-    tokio::spawn(async move {
-        tokio::signal::ctrl_c().await.expect("Could not register ctrl+c handler");
-        shard_manager.lock().await.shutdown_all().await;
-    });
+        .expect("Error creating client");
 
     if let Err(why) = client.start().await {
-        error!("Client error: {:?}", why);
+        println!("Client error: {:?}", why);
     }
 }
