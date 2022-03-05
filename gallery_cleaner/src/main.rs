@@ -6,17 +6,28 @@ use serenity::{
     prelude::*,
 };
 use std::env;
-use tracing::error;
+use tracing::{error, info, Level};
+use tracing_subscriber::FmtSubscriber;
 
 #[tokio::main]
 async fn main() {
+    // Log/Output settings
+    let subscriber = FmtSubscriber::builder()
+        .with_max_level(Level::INFO)
+        .finish();
+
+    tracing::subscriber::set_global_default(subscriber).expect("setting default subscriber failed");
+
+    // load config
     dotenv::from_filename("./.env").expect("Failed to load .env file");
     let token = env::var("DISCORD_TOKEN").expect("Expected token in env.");
     let admin_channel = str_to_channel_id(
         &env::var("ADMIN_CHANNEL_ID").expect("Expected admin channel id in env."),
     );
     let channels_to_clean = env::vars().filter(|c| c.0.starts_with("PURGE_CHANNEL_ID"));
-
+    
+    // connect to api and clean
+    info!("Starting clean job.");
     let client = Client::builder(&token).await.expect("Err creating client");
     let ctx = &client.cache_and_http.http;
 
@@ -36,7 +47,9 @@ async fn main() {
             "Deleted {} messages in channel {}",
             purge_count, channel_name
         );
-        admin_channel.say(ctx, delete_count_msg).await.unwrap();
+
+        admin_channel.say(ctx, &delete_count_msg).await.unwrap();
+        info!("{}", &delete_count_msg);
     }
 }
 
