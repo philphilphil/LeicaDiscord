@@ -1,17 +1,12 @@
-use std::{env, ops::Add};
+use std::{env, panic};
 
 use serenity::{
     async_trait,
-    builder::{CreateApplicationCommand, CreateApplicationCommandOption},
     model::{
         gateway::Ready,
-        id::{CommandId, GuildId},
+        id::GuildId,
         interactions::{
-            application_command::{
-                ApplicationCommand, ApplicationCommandInteractionDataOptionValue,
-                ApplicationCommandOptionType,
-            },
-            Interaction, InteractionResponseType,
+            application_command::ApplicationCommandOptionType, Interaction, InteractionResponseType,
         },
     },
     prelude::*,
@@ -22,11 +17,32 @@ struct Handler;
 #[async_trait]
 impl EventHandler for Handler {
     async fn interaction_create(&self, ctx: Context, interaction: Interaction) {
-        if let Interaction::ApplicationCommand(command) = interaction {
-            let content = match command.data.name.as_str() {
-                "role" => "Hey, I'm alive!".to_string(),
-                _ => "not implemented :(".to_string(),
-            };
+        if let Interaction::ApplicationCommand(mut command) = interaction {
+            if command.data.name.as_str() != "role" {
+                panic!("Command other then \"role\" used, this is not possible.")
+            }
+
+            let mut content = "Done :)";
+
+            for option in &command.data.options {
+                let role_id = option
+                    .value
+                    .as_ref()
+                    .expect("Can't get command option.")
+                    .as_u64()
+                    .expect("Can't parse role id.");
+
+                content = match command
+                    .member
+                    .as_mut()
+                    .unwrap()
+                    .add_role(&ctx.http, role_id)
+                    .await
+                {
+                    Ok(_) => "Done :)",
+                    _ => "something went wrong :(",
+                };
+            }
 
             if let Err(why) = command
                 .create_interaction_response(&ctx.http, |response| {
@@ -52,6 +68,7 @@ impl EventHandler for Handler {
         );
 
         let _commands = GuildId::set_application_commands(&guild_id, &ctx.http, |commands| {
+            // TODO: Move role setup to a config and remove repeated code of add_string_choices for all 3 options
             commands.create_application_command(|command| {
                 command
                     .name("role")
@@ -62,8 +79,8 @@ impl EventHandler for Handler {
                             .description("The role to assign or unassign.")
                             .kind(ApplicationCommandOptionType::String)
                             .required(true)
-                            .add_string_choice("M Digital", "M-Digi")
-                            .add_string_choice("M Film", "M-Film")
+                            .add_string_choice("M Digital", "835591825917870081")
+                            .add_string_choice("M Film", "835591825925603368")
                             .add_string_choice("Q", "Q")
                             .add_string_choice("SL", "SL")
                             .add_string_choice("R", "R")
@@ -78,8 +95,8 @@ impl EventHandler for Handler {
                             .description("The role to assign or unassign.")
                             .kind(ApplicationCommandOptionType::String)
                             .required(false)
-                            .add_string_choice("M Digital", "M-Digi")
-                            .add_string_choice("M Film", "M-Film")
+                            .add_string_choice("M Digital", "835591825917870081")
+                            .add_string_choice("M Film", "835591825925603368")
                             .add_string_choice("Q", "Q")
                             .add_string_choice("SL", "SL")
                             .add_string_choice("R", "R")
@@ -94,8 +111,8 @@ impl EventHandler for Handler {
                             .description("The role to assign or unassign.")
                             .kind(ApplicationCommandOptionType::String)
                             .required(false)
-                            .add_string_choice("M Digital", "M-Digi")
-                            .add_string_choice("M Film", "M-Film")
+                            .add_string_choice("M Digital", "835591825917870081")
+                            .add_string_choice("M Film", "835591825925603368")
                             .add_string_choice("Q", "Q")
                             .add_string_choice("SL", "SL")
                             .add_string_choice("R", "R")
