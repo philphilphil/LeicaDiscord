@@ -1,148 +1,75 @@
-use std::{env, panic};
-
+mod commands;
+mod container;
+mod handler;
+use commands::{meta::*, owner::*, quote::*};
+use container::ShardManagerContainer;
+use handler::Handler;
 use serenity::{
-    async_trait,
-    model::{
-        gateway::Ready,
-        id::GuildId,
-        interactions::{
-            application_command::ApplicationCommandOptionType, Interaction, InteractionResponseType,
-        },
-    },
+    framework::{standard::macros::group, StandardFramework},
+    http::Http,
     prelude::*,
 };
+use std::{collections::HashSet, env, panic};
 
-struct Handler;
-
-#[async_trait]
-impl EventHandler for Handler {
-    async fn interaction_create(&self, ctx: Context, interaction: Interaction) {
-        if let Interaction::ApplicationCommand(mut command) = interaction {
-            if command.data.name.as_str() != "role" {
-                panic!("Command other then \"role\" used, this is not possible.")
-            }
-
-            let mut content = "Done :)";
-
-            for option in &command.data.options {
-                let role_id = option
-                    .value
-                    .as_ref()
-                    .expect("Can't get command option.")
-                    .as_u64()
-                    .expect("Can't parse role id.");
-
-                content = match command
-                    .member
-                    .as_mut()
-                    .unwrap()
-                    .add_role(&ctx.http, role_id)
-                    .await
-                {
-                    Ok(_) => "Done :)",
-                    _ => "something went wrong :(",
-                };
-            }
-
-            if let Err(why) = command
-                .create_interaction_response(&ctx.http, |response| {
-                    response
-                        .kind(InteractionResponseType::ChannelMessageWithSource)
-                        .interaction_response_data(|message| message.content(content))
-                })
-                .await
-            {
-                println!("Cannot respond to slash command: {}", why);
-            }
-        }
-    }
-
-    async fn ready(&self, ctx: Context, ready: Ready) {
-        println!("{} is connected!", ready.user.name);
-
-        let guild_id = GuildId(
-            env::var("GUILD_ID")
-                .expect("Expected GUILD_ID in environment")
-                .parse()
-                .expect("GUILD_ID must be an integer"),
-        );
-
-        let _commands = GuildId::set_application_commands(&guild_id, &ctx.http, |commands| {
-            // TODO: Move role setup to a config and remove repeated code of add_string_choices for all 3 options
-            commands.create_application_command(|command| {
-                command
-                    .name("role")
-                    .description("Assign (or unassign) yourself camera system roles. If you had the role it will be unassigned.")
-                    .create_option(|option| {
-                        option
-                            .name("role")
-                            .description("The role to assign or unassign.")
-                            .kind(ApplicationCommandOptionType::String)
-                            .required(true)
-                            .add_string_choice("M Digital", "835591825917870081")
-                            .add_string_choice("M Film", "835591825925603368")
-                            .add_string_choice("Q", "Q")
-                            .add_string_choice("SL", "SL")
-                            .add_string_choice("R", "R")
-                            .add_string_choice("S", "S")
-                            .add_string_choice("*-Lux/X/TL", "*-Lux/X/TL")
-                            .add_string_choice("Sofort", "Sofort")
-                            .add_string_choice("Barnack/LTM", "Barnack")
-                    })
-                    .create_option(|option| {
-                        option
-                            .name("role2")
-                            .description("The role to assign or unassign.")
-                            .kind(ApplicationCommandOptionType::String)
-                            .required(false)
-                            .add_string_choice("M Digital", "835591825917870081")
-                            .add_string_choice("M Film", "835591825925603368")
-                            .add_string_choice("Q", "Q")
-                            .add_string_choice("SL", "SL")
-                            .add_string_choice("R", "R")
-                            .add_string_choice("S", "S")
-                            .add_string_choice("*-Lux/X/TL", "*-Lux/X/TL")
-                            .add_string_choice("Sofort", "Sofort")
-                            .add_string_choice("Barnack/LTM", "Barnack")
-                    })
-                    .create_option(|option| {
-                        option
-                            .name("role3")
-                            .description("The role to assign or unassign.")
-                            .kind(ApplicationCommandOptionType::String)
-                            .required(false)
-                            .add_string_choice("M Digital", "835591825917870081")
-                            .add_string_choice("M Film", "835591825925603368")
-                            .add_string_choice("Q", "Q")
-                            .add_string_choice("SL", "SL")
-                            .add_string_choice("R", "R")
-                            .add_string_choice("S", "S")
-                            .add_string_choice("*-Lux/X/TL", "*-Lux/X/TL")
-                            .add_string_choice("Sofort", "Sofort")
-                            .add_string_choice("Barnack/LTM", "Barnack")
-                    })
-            })
-        })
-        .await;
-    }
-}
+#[group]
+#[commands(quote, ping, quit)]
+struct General;
 
 #[tokio::main]
 async fn main() {
+    // load config
     dotenv::from_filename("./.env").expect("Failed to load .env file");
     let token = env::var("DISCORD_TOKEN").expect("Expected a token in the environment");
-
     let application_id: u64 = env::var("APPLICATION_ID")
         .expect("Expected an application id in the environment")
         .parse()
         .expect("application id is not a valid id");
 
+    // initialize log output
+    tracing_subscriber::fmt::init();
+
+    // Fetch owners and id
+    let http = Http::new_with_token(&token);
+    let (owners, _bot_id) = match http.get_current_application_info().await {
+        Ok(info) => {
+            let mut owners = HashSet::new();
+            owners.insert(info.owner.id);
+
+            (owners, info.id)
+        }
+        Err(why) => panic!("Could not access application info: {:?}", why),
+    };
+
+    // create framework for bot commands
+    let framework = StandardFramework::new()
+        .configure(|c| c.owners(owners).prefix("!"))
+        .group(&GENERAL_GROUP);
+
+    // build clients, register framework and event handler
     let mut client = Client::builder(token)
+        .framework(framework)
         .event_handler(Handler)
         .application_id(application_id)
         .await
         .expect("Error creating client");
 
+    // initialize shared manager container
+    {
+        let mut data = client.data.write().await;
+        data.insert::<ShardManagerContainer>(client.shard_manager.clone());
+    }
+
+    let shard_manager = client.shard_manager.clone();
+
+    // spawn thread
+    tokio::spawn(async move {
+        tokio::signal::ctrl_c()
+            .await
+            .expect("Could not register ctrl+c handler");
+        shard_manager.lock().await.shutdown_all().await;
+    });
+
+    // finally, connect and start
     if let Err(why) = client.start().await {
         println!("Client error: {:?}", why);
     }
