@@ -1,3 +1,4 @@
+use anyhow::{anyhow};
 use serenity::{
     model::{
         id::GuildId,
@@ -7,22 +8,22 @@ use serenity::{
     },
     prelude::*,
 };
-use tokio::time::error::Error;
 
 type ACI = ApplicationCommandInteraction;
 
-pub async fn handle(ctx: &Context, command: &mut ACI) -> Result<(), Error> {
+pub async fn handle(ctx: &Context, command: &mut ACI) -> anyhow::Result<()> {
     let user_roles = &command.member.as_ref().unwrap().roles.to_owned();
 
     for option in &command.data.options {
-        let option_str = option.value.as_ref().unwrap().as_str();
-        let role_id: u64 = option_str.unwrap().parse().expect("Can't parse role id.");
-        let member = command.member.as_mut().unwrap();
+        let option_str = option.value.as_ref().ok_or(anyhow!("Can't get option."))?;
+        let option_str = option_str.as_str().ok_or(anyhow!("Can't parse option."))?;
+        let role_id: u64 = option_str.parse()?;
+        let member = command.member.as_mut().ok_or(anyhow!("Can't load member."))?;
 
         if user_roles.iter().any(|r| r.0 == role_id) {
-            member.remove_role(&ctx.http, role_id).await.unwrap();
+            member.remove_role(&ctx.http, role_id).await?;
         } else {
-            member.add_role(&ctx.http, role_id).await.unwrap();
+            member.add_role(&ctx.http, role_id).await?;
         }
     }
     Ok(())
@@ -32,7 +33,7 @@ pub async fn handle(ctx: &Context, command: &mut ACI) -> Result<(), Error> {
 pub async fn create_command(
     guild_id: &GuildId,
     ctx: &Context,
-) -> Result<Vec<ApplicationCommand>, Error> {
+) -> anyhow::Result<Vec<ApplicationCommand>> {
     let cmds = GuildId::set_application_commands(&guild_id, &ctx.http, |commands| {
         // TODO: Move role setup to a config and remove repeated code of add_string_choices for all 3 options
         commands.create_application_command(|command| {
