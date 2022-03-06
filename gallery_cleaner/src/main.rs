@@ -44,8 +44,8 @@ async fn main() {
         let (purge_count, count_media_kept) = purge_channel(&channel, ctx).await;
 
         let delete_count_msg = format!(
-            "Deleted {} messages in channel {}. Kept {} images.",
-            purge_count, channel_name, count_media_kept
+            "Purge #{}: Deleted {} messages, kept {} images.",
+            channel_name, purge_count, count_media_kept
         );
 
         admin_channel.say(ctx, &delete_count_msg).await.unwrap();
