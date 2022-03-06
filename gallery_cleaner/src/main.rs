@@ -25,7 +25,7 @@ async fn main() {
         &env::var("ADMIN_CHANNEL_ID").expect("Expected admin channel id in env."),
     );
     let channels_to_clean = env::vars().filter(|c| c.0.starts_with("PURGE_CHANNEL_ID"));
-    
+
     // connect to api and clean
     info!("Starting clean job.");
     let client = Client::builder(&token).await.expect("Err creating client");
@@ -41,11 +41,11 @@ async fn main() {
             .unwrap()
             .name; // for some reason .name() on ChannelId does not work.
 
-        let purge_count = purge_channel(&channel, ctx).await;
+        let (purge_count, kept_count) = purge_channel(&channel, ctx).await;
 
         let delete_count_msg = format!(
-            "Deleted {} messages in channel {}",
-            purge_count, channel_name
+            "Deleted {} messages in channel {}. Kept {}.",
+            purge_count, channel_name, kept_count
         );
 
         admin_channel.say(ctx, &delete_count_msg).await.unwrap();
@@ -53,8 +53,9 @@ async fn main() {
     }
 }
 
-async fn purge_channel(channel: &ChannelId, ctx: &Http) -> u64 {
+async fn purge_channel(channel: &ChannelId, ctx: &Http) -> (u64, u64) {
     let mut count_deleted = 0;
+    let mut count_kept = 0;
 
     let mut messages = channel.messages_iter(&ctx).boxed();
 
@@ -71,12 +72,14 @@ async fn purge_channel(channel: &ChannelId, ctx: &Http) -> u64 {
                             error!("Error deleting msg: {}. Error: {}", message.id, error)
                         }
                     }
+                } else {
+                    count_kept += 1;
                 }
             }
             Err(error) => error!("Error fetching messages: {}", error),
         }
     }
-    count_deleted
+    (count_deleted, count_kept)
 }
 
 fn message_not_cdn(msg: &Message) -> bool {
