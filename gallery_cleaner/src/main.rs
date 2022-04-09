@@ -18,8 +18,9 @@ async fn main() {
 
     tracing::subscriber::set_global_default(subscriber).expect("setting default subscriber failed");
 
-    // load config
-    dotenv::from_filename("./.env").expect("Failed to load .env file");
+    // load config, comment in for non-docker run
+    //dotenv::from_filename("./.env").expect("Failed to load .env file"); 
+    
     let token = env::var("DISCORD_TOKEN").expect("Expected token in env.");
     let admin_channel = str_to_channel_id(
         &env::var("ADMIN_CHANNEL_ID").expect("Expected admin channel id in env."),
