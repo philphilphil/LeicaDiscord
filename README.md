@@ -1,5 +1,5 @@
 # LeicaDiscord
-Bot and Web for the "Leica Photography" Discord
+Bot and Web for the "Leica Photography" Discord.
 https://discord.gg/LeicaPhotography
 ## bot
 Giving out roles and posting quotes of a great comedian and camera reviewer.
