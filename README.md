@@ -1,8 +1,11 @@
 # LeicaDiscord
 Bot and Web for the "Leica Photography" Discord
+https://discord.gg/LeicaPhotography
+## bot
+Giving out roles and posting quotes of a great comedian and camera reviewer.
 
-## KenR
-Discord bot for cleaning up the gallery channels of text messages, giving out roles and posting quotes of a great comedian and camera reviewer.
+## gallery_cleaner
+Cleans the gallery channels of text messages and only keeps images.
 
-## Web
-Backand stuff and some planned features
+## web
+Backand stuff and some planned features.
