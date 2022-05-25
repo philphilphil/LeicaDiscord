@@ -1,24 +1,16 @@
+use chrono::DateTime;
+use chrono::Duration;
+use chrono::Local;
+use chrono::TimeZone;
 use rusqlite::{Connection, Result};
 use serenity::framework::standard::{macros::command, CommandResult};
 use serenity::model::prelude::*;
 use serenity::prelude::*;
 use tracing::error;
 
-#[command]
-#[aliases("q")]
-async fn quote(ctx: &Context, msg: &Message) -> CommandResult {
-    match get_quote() {
-        Ok(quote) => {
-            if let Err(why) = msg.channel_id.say(&ctx.http, quote).await {
-                error!("Error sending message: {:?}", why);
-            }
-        }
-        Err(quote) => {
-            error!("Issue getting data from db: {:?}", quote);
-        }
-    }
-
-    Ok(())
+enum QuoteResult {
+    OnCooldown,
+    Quote(String),
 }
 
 #[derive(Debug)]
@@ -27,16 +19,63 @@ struct KenRQuote {
     quote: String,
 }
 
-fn get_quote() -> Result<String, rusqlite::Error> {
-    let path = "db/app.db";
+#[command]
+#[aliases("q")]
+async fn quote(ctx: &Context, msg: &Message) -> CommandResult {
+    match get_quote() {
+        Ok(quote) => match quote {
+            QuoteResult::OnCooldown => {
+                if let Err(why) = msg.channel_id.say(&ctx.http, "on cd").await {
+                    error!("Error sending message: {:?}", why);
+                }
+            }
+            QuoteResult::Quote(q) => {
+                if let Err(why) = msg.channel_id.say(&ctx.http, q).await {
+                    error!("Error sending message: {:?}", why);
+                }
+            }
+        },
+        Err(why) => {
+            error!("Issue getting data from db: {:?}", why);
+        }
+    }
+    Ok(())
+}
+
+fn on_cooldown(conn: &Connection) -> bool {
+    let last_post: chrono::NaiveDateTime = conn
+        .query_row(
+            "SELECT LastPosted FROM KenRQuotes ORDER BY LastPosted DESC LIMIT 1",
+            [],
+            |r| r.get(0),
+        )
+        .unwrap();
+
+    let last_post: DateTime<Local> = Local.from_local_datetime(&last_post).unwrap();
+
+    if last_post + Duration::seconds(20) > Local::now() {
+        return true;
+    }
+
+    false
+}
+
+fn get_quote() -> Result<QuoteResult, rusqlite::Error> {
+    let path = "db/app_lessquotes.db";
     let conn = Connection::open(path)?;
+
+    if on_cooldown(&conn) {
+        return Ok(QuoteResult::OnCooldown);
+    }
 
     check_and_reset_quote_states(&conn)?;
 
     if let Ok(quote) = get_random_quote(&conn) {
-        let mut query = conn.prepare("UPDATE KenRQuotes SET LastPosted = DATE() WHERE id = (?)")?;
+        let mut query = conn.prepare(
+            "UPDATE KenRQuotes SET LastPosted = datetime('now', 'localtime') WHERE id = (?)",
+        )?;
         query.execute([quote.id])?;
-        Ok(quote.quote)
+        Ok(QuoteResult::Quote(quote.quote))
     } else {
         Err(rusqlite::Error::InvalidQuery)
     }
