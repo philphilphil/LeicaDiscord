@@ -3,9 +3,11 @@ use chrono::Duration;
 use chrono::Local;
 use chrono::TimeZone;
 use rusqlite::{Connection, Result};
-use serenity::framework::standard::{macros::command, CommandResult};
-use serenity::model::prelude::*;
-use serenity::prelude::*;
+use serenity::{
+    framework::standard::{macros::command, CommandResult},
+    model::prelude::*,
+    prelude::*,
+};
 use tracing::error;
 
 enum QuoteResult {
@@ -19,16 +21,23 @@ struct KenRQuote {
     quote: String,
 }
 
+const COOLDOWN_MESSAGE: &str =
+    "Due to increased cost of my growing family I can only post a quote ever 20 seconds.";
+
 #[command]
 #[aliases("q")]
 async fn quote(ctx: &Context, msg: &Message) -> CommandResult {
     match get_quote() {
         Ok(quote) => match quote {
             QuoteResult::OnCooldown => {
-                if let Err(why) = msg.channel_id.say(&ctx.http, "on cd").await {
+                if let Err(why) = msg
+                    .author
+                    .dm(&ctx.http, |m| m.content(COOLDOWN_MESSAGE))
+                    .await
+                {
                     error!("Error sending message: {:?}", why);
                 }
-                // msg.author.dm(&ctx.http, "On cd".into());
+                msg.delete(&ctx.http).await.unwrap();
             }
             QuoteResult::Quote(q) => {
                 if let Err(why) = msg.channel_id.say(&ctx.http, q).await {
@@ -43,29 +52,27 @@ async fn quote(ctx: &Context, msg: &Message) -> CommandResult {
     Ok(())
 }
 
-fn on_cooldown(conn: &Connection) -> bool {
-    let last_post: chrono::NaiveDateTime = conn
-        .query_row(
-            "SELECT LastPosted FROM KenRQuotes ORDER BY LastPosted DESC LIMIT 1",
-            [],
-            |r| r.get(0),
-        )
-        .unwrap();
+fn on_cooldown(conn: &Connection) -> Result<bool, rusqlite::Error> {
+    let last_post: chrono::NaiveDateTime = conn.query_row(
+        "SELECT LastPosted FROM KenRQuotes ORDER BY LastPosted DESC LIMIT 1",
+        [],
+        |r| r.get(0),
+    )?;
 
     let last_post: DateTime<Local> = Local.from_local_datetime(&last_post).unwrap();
 
     if last_post + Duration::seconds(20) > Local::now() {
-        return true;
+        return Ok(true);
     }
 
-    false
+    Ok(false)
 }
 
 fn get_quote() -> Result<QuoteResult, rusqlite::Error> {
     let path = "db/app_lessquotes.db";
     let conn = Connection::open(path)?;
 
-    if on_cooldown(&conn) {
+    if on_cooldown(&conn)? {
         return Ok(QuoteResult::OnCooldown);
     }
 
