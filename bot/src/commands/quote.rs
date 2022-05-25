@@ -28,6 +28,7 @@ async fn quote(ctx: &Context, msg: &Message) -> CommandResult {
                 if let Err(why) = msg.channel_id.say(&ctx.http, "on cd").await {
                     error!("Error sending message: {:?}", why);
                 }
+                // msg.author.dm(&ctx.http, "On cd".into());
             }
             QuoteResult::Quote(q) => {
                 if let Err(why) = msg.channel_id.say(&ctx.http, q).await {

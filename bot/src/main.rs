@@ -29,24 +29,13 @@ async fn main() {
     tracing_subscriber::fmt::init();
 
     // Fetch owners and id
-    let http = Http::new_with_token(&token);
-    let (owners, _bot_id) = match http.get_current_application_info().await {
-        Ok(info) => {
-            let mut owners = HashSet::new();
-            owners.insert(info.owner.id);
-
-            (owners, info.id)
-        }
-        Err(why) => panic!("Could not access application info: {:?}", why),
-    };
+    let intents = GatewayIntents::non_privileged() | GatewayIntents::MESSAGE_CONTENT;
 
     // create framework for bot commands
-    let framework = StandardFramework::new()
-        .configure(|c| c.owners(owners).prefix("!"))
-        .group(&GENERAL_GROUP);
+    let framework = StandardFramework::new().group(&GENERAL_GROUP);
 
     // build clients, register framework and event handler
-    let mut client = Client::builder(token)
+    let mut client = Client::builder(token, intents)
         .framework(framework)
         .event_handler(Handler)
         .application_id(application_id)
