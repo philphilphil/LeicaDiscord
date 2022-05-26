@@ -32,15 +32,18 @@ impl EventHandler for Handler {
 
     async fn interaction_create(&self, ctx: Context, interaction: Interaction) {
         if let Interaction::ApplicationCommand(mut command) = interaction {
-            let mut response_message = "Done :)";
+            let response_message;
 
             match command.data.name.as_str() {
-                "role" => {
-                    if let Err(why) = slash_role::handle(&ctx, &mut command).await {
-                        error!("Error handling role command: {}", why);
-                        response_message = "Something went wrong. Please tell my boss.";
+                "role" => match slash_role::handle(&ctx, &mut command).await {
+                    Ok(response) => {
+                        response_message = response;
                     }
-                }
+                    Err(why) => {
+                        error!("Error handling role command: {}", why);
+                        response_message = "Something went wrong.".to_string();
+                    }
+                },
                 _ => panic!("Command other then \"role\" used, this is not possible."),
             }
 
