@@ -52,22 +52,6 @@ async fn quote(ctx: &Context, msg: &Message) -> CommandResult {
     Ok(())
 }
 
-fn on_cooldown(conn: &Connection) -> Result<bool, rusqlite::Error> {
-    let last_post: chrono::NaiveDateTime = conn.query_row(
-        "SELECT LastPosted FROM KenRQuotes ORDER BY LastPosted DESC LIMIT 1",
-        [],
-        |r| r.get(0),
-    )?;
-
-    let last_post: DateTime<Local> = Local.from_local_datetime(&last_post).unwrap();
-
-    if last_post + Duration::seconds(20) > Local::now() {
-        return Ok(true);
-    }
-
-    Ok(false)
-}
-
 fn get_quote() -> Result<QuoteResult, rusqlite::Error> {
     let path = "db/app_lessquotes.db";
     let conn = Connection::open(path)?;
@@ -87,6 +71,22 @@ fn get_quote() -> Result<QuoteResult, rusqlite::Error> {
     } else {
         Err(rusqlite::Error::InvalidQuery)
     }
+}
+
+fn on_cooldown(conn: &Connection) -> Result<bool, rusqlite::Error> {
+    let last_post: chrono::NaiveDateTime = conn.query_row(
+        "SELECT LastPosted FROM KenRQuotes ORDER BY LastPosted DESC LIMIT 1",
+        [],
+        |r| r.get(0),
+    )?;
+
+    let last_post: DateTime<Local> = Local.from_local_datetime(&last_post).unwrap();
+
+    if last_post + Duration::seconds(20) > Local::now() {
+        return Ok(true);
+    }
+
+    Ok(false)
 }
 
 fn check_and_reset_quote_states(conn: &Connection) -> Result<(), rusqlite::Error> {
