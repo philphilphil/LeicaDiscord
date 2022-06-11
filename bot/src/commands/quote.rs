@@ -22,7 +22,7 @@ struct KenRQuote {
 }
 
 const COOLDOWN_MESSAGE: &str =
-    "Due to increased cost of my growing family I can only post a quote ever 20 seconds.";
+    "Due to increased cost of my growing family I can only post a quote every 20 seconds.";
 
 #[command]
 #[aliases("q")]

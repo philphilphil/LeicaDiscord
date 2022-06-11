@@ -55,7 +55,7 @@ pub async fn create_command(
         commands.create_application_command(|command| {
             command
                 .name("role")
-                .description("Assign (or unassign) yourself camera system roles. If you had the role it will be unassigned.")
+                .description("Assign (or unassign) yourself camera system roles.")
                 .create_option(|option| {
                     option
                         .name("role")
@@ -71,10 +71,11 @@ pub async fn create_command(
                         .add_string_choice("*-Lux/X/TL", "746651530123411496")
                         .add_string_choice("Sofort", "746651922278383646")
                         .add_string_choice("Barnack/LTM", "887087098539163658")
-                        //TODO: find way to not hardcode the role and ids
+                    //TODO: find way to not hardcode the role and ids
                 })
         })
     })
-    .await.expect("Issue creating the role cmd");
+    .await
+    .expect("Issue creating the role cmd");
     Ok(cmds)
 }
