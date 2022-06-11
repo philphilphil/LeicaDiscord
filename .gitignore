@@ -373,3 +373,4 @@ Cargo.lock
 *.pdb
 .env.live
 bot/db/
+db/

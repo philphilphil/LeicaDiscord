@@ -53,7 +53,7 @@ async fn quote(ctx: &Context, msg: &Message) -> CommandResult {
 }
 
 fn get_quote() -> Result<QuoteResult, rusqlite::Error> {
-    let path = "db/app_lessquotes.db";
+    let path = "../db/app.db";
     let conn = Connection::open(path)?;
 
     if on_cooldown(&conn)? {
