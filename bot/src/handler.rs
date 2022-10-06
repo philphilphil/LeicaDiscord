@@ -21,20 +21,17 @@ impl EventHandler for Handler {
                 .expect("GUILD_ID must be an integer"),
         );
 
-        let test = GuildId::roles(guild_id, &ctx.http);
+        // let test = GuildId::roles(guild_id, &ctx.http).await;
+        // println!("{:#?}", test);
 
-        let commands = GuildId::set_application_commands(&guild_id, &ctx.http, |commands| {
+        let _commands = GuildId::set_application_commands(&guild_id, &ctx.http, |commands| {
             commands
                 .create_application_command(|command| command_register::register_camera(command))
                 .create_application_command(|command| command_register::register_location(command))
         })
         .await;
-
-        println!(
-            "I now have the following guild slash commands: {:#?}",
-            commands
-        );
     }
+
     async fn interaction_create(&self, ctx: Context, interaction: Interaction) {
         if let Interaction::ApplicationCommand(mut command) = interaction {
             let response_message = match command.data.name.as_str() {

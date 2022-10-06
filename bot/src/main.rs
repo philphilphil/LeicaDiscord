@@ -1,7 +1,7 @@
 mod commands;
 mod container;
 mod handler;
-use commands::{meta::*, owner::*, quote::*};
+use commands::{meta::*, quote::*};
 use container::ShardManagerContainer;
 use handler::Handler;
 use serenity::{
