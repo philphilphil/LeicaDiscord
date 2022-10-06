@@ -1,4 +1,5 @@
-pub mod quote;
+pub mod command_register;
+pub mod command_service;
 pub mod meta;
 pub mod owner;
-pub mod slash_role;
+pub mod quote;

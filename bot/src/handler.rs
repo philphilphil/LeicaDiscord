@@ -1,11 +1,7 @@
-use crate::commands::slash_role;
+use crate::commands::{command_register, command_service};
 use serenity::{
     async_trait,
-    model::{
-        gateway::Ready,
-        id::GuildId,
-        interactions::{Interaction, InteractionResponseType},
-    },
+    model::{application::interaction::*, gateway::Ready, id::GuildId},
     prelude::*,
 };
 use std::env;
@@ -25,27 +21,39 @@ impl EventHandler for Handler {
                 .expect("GUILD_ID must be an integer"),
         );
 
-        slash_role::create_command(&guild_id, &ctx)
-            .await
-            .expect("Can't create role slash command.");
-    }
+        let test = GuildId::roles(guild_id, &ctx.http);
 
+        let commands = GuildId::set_application_commands(&guild_id, &ctx.http, |commands| {
+            commands
+                .create_application_command(|command| command_register::register_camera(command))
+                .create_application_command(|command| command_register::register_location(command))
+        })
+        .await;
+
+        println!(
+            "I now have the following guild slash commands: {:#?}",
+            commands
+        );
+    }
     async fn interaction_create(&self, ctx: Context, interaction: Interaction) {
         if let Interaction::ApplicationCommand(mut command) = interaction {
-            let response_message;
-
-            match command.data.name.as_str() {
-                "role" => match slash_role::handle(&ctx, &mut command).await {
-                    Ok(response) => {
-                        response_message = response;
-                    }
+            let response_message = match command.data.name.as_str() {
+                "role-camera" => match command_service::run(&ctx, &mut command).await {
+                    Ok(response) => response,
                     Err(why) => {
                         error!("Error handling role command: {}", why);
-                        response_message = "Something went wrong.".to_string();
+                        "Something went wrong.".to_string()
                     }
                 },
-                _ => panic!("Command other then \"role\" used, this is not possible."),
-            }
+                "role-location" => match command_service::run(&ctx, &mut command).await {
+                    Ok(response) => response,
+                    Err(why) => {
+                        error!("Error handling role command: {}", why);
+                        "Something went wrong.".to_string()
+                    }
+                },
+                _ => panic!("Unsupported role command used, this is not possible."),
+            };
 
             if let Err(why) = command
                 .create_interaction_response(&ctx.http, |response| {
