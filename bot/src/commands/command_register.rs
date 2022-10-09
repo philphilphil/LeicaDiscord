@@ -31,6 +31,10 @@ pub fn register_location(command: &mut CreateApplicationCommand) -> &mut CreateA
                 .add_string_choice("Motherland", "1012500529609461760")
                 .add_string_choice("Berlin", "1012500693564801146")
                 .add_string_choice("United Kingdom", "1012500827858014349")
+                .add_string_choice("India", "1028759460375695531")
+                .add_string_choice("Oceania", "1028759514092150785")
+                .add_string_choice("Australia", "1028759553099186216")
+                .add_string_choice("New Zealand", "1028759714550526072")
         })
 }
 
