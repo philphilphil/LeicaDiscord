@@ -29,6 +29,7 @@ async fn main() {
     // connect to api and clean
     info!("Starting clean job.");
     let intents = GatewayIntents::all();
+
     let client = Client::builder(token, intents)
         .await
         .expect("Err creating client");
@@ -112,7 +113,6 @@ fn message_older_then_one_day(msg: &Message) -> bool {
         .unwrap()
         .as_secs();
 
-    info!("{}", (current_unix - msg_unix));
     (current_unix - msg_unix) > 86400
 }
 
