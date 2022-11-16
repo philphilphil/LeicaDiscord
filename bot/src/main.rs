@@ -1,6 +1,7 @@
 mod commands;
 mod container;
 mod handler;
+mod message_handlers;
 use commands::{meta::*, quote::*};
 use container::ShardManagerContainer;
 use handler::Handler;
@@ -18,7 +19,7 @@ struct General;
 #[tokio::main]
 async fn main() {
     // load config
-    dotenv::from_filename("./.env").expect("Failed to load .env file");
+    dotenv::from_filename("./.env.dev").expect("Failed to load .env file");
     let token = env::var("DISCORD_TOKEN").expect("Expected a token in the environment");
     let application_id: u64 = env::var("APPLICATION_ID")
         .expect("Expected an application id in the environment")

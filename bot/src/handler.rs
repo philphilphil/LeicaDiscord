@@ -1,7 +1,8 @@
 use crate::commands::{command_register, command_service};
+use crate::message_handlers::lesser_cameras::handle_lesser_brand_messages;
 use serenity::{
     async_trait,
-    model::{application::interaction::*, gateway::Ready, id::GuildId},
+    model::{application::interaction::*, gateway::Ready, id::GuildId, prelude::Message},
     prelude::*,
 };
 use std::env;
@@ -30,6 +31,13 @@ impl EventHandler for Handler {
                 .create_application_command(|command| command_register::register_location(command))
         })
         .await;
+    }
+
+    async fn message(&self, context: Context, msg: Message) {
+        match handle_lesser_brand_messages(context, msg).await {
+            Ok(_) => (),
+            Err(_) => error!("Issue handling lesser brand message."),
+        }
     }
 
     async fn interaction_create(&self, ctx: Context, interaction: Interaction) {
