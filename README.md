@@ -8,7 +8,7 @@ https://discord.gg/LeicaPhotography
 Giving out roles and posting quotes of a great comedian and camera reviewer.
 
 ## gallery_cleaner
-Cleans the gallery channels of text messages and only keeps images.
+[moved](https://github.com/philphilphil/discord_channel_cleaner)  
 
 ## web
 Backand stuff and some planned features.
