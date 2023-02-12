@@ -13,7 +13,7 @@ use serenity::{
 use std::{collections::HashSet, env, panic};
 
 #[group]
-#[commands(quote, ping, fifty_mm, thirty_five_mm)]
+#[commands(quote, quotesilent, ping, fifty_mm, thirty_five_mm)]
 struct General;
 
 #[tokio::main]

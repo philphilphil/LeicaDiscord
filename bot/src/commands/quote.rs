@@ -24,9 +24,7 @@ struct KenRQuote {
 const COOLDOWN_MESSAGE: &str =
     "Due to increased cost of my growing family I can only post a quote every 20 seconds.";
 
-#[command]
-#[aliases("q")]
-async fn quote(ctx: &Context, msg: &Message) -> CommandResult {
+async fn post_quote(ctx: &Context, msg: &Message) -> CommandResult {
     match get_quote() {
         Ok(quote) => match quote {
             QuoteResult::OnCooldown => {
@@ -49,6 +47,22 @@ async fn quote(ctx: &Context, msg: &Message) -> CommandResult {
             error!("Issue getting data from db: {:?}", why);
         }
     }
+
+    Ok(())
+}
+
+#[command]
+#[aliases("q")]
+async fn quote(ctx: &Context, msg: &Message) -> CommandResult {
+    post_quote(ctx, msg).await
+}
+
+// Say quote but delete trigger message (hidden feature ;))
+#[command]
+#[aliases("qs")]
+async fn quotesilent(ctx: &Context, msg: &Message) -> CommandResult {
+    post_quote(ctx, msg).await?;
+    _ = msg.delete(&ctx.http).await;
     Ok(())
 }
 
@@ -73,6 +87,8 @@ fn get_quote() -> Result<QuoteResult, rusqlite::Error> {
     }
 }
 
+/// If the duration since the last posted quote is less then 20 seconds,
+/// the command is on cooldown
 fn on_cooldown(conn: &Connection) -> Result<bool, rusqlite::Error> {
     let last_post: chrono::NaiveDateTime = conn.query_row(
         "SELECT LastPosted FROM KenRQuotes ORDER BY LastPosted DESC LIMIT 1",
@@ -89,6 +105,8 @@ fn on_cooldown(conn: &Connection) -> Result<bool, rusqlite::Error> {
     Ok(false)
 }
 
+/// If no more quotes without a LastPosted date are available,
+/// reset all to NULL and restart the cycle
 fn check_and_reset_quote_states(conn: &Connection) -> Result<(), rusqlite::Error> {
     let available_quote_count: u64 = conn.query_row(
         "SELECT COUNT(*) FROM KenRQuotes WHERE LastPosted IS NULL",
@@ -103,6 +121,7 @@ fn check_and_reset_quote_states(conn: &Connection) -> Result<(), rusqlite::Error
     Ok(())
 }
 
+/// Get a random quote that was not yet posted in this cycle
 fn get_random_quote(conn: &Connection) -> Result<KenRQuote, rusqlite::Error> {
     let mut query = conn.prepare(
         "SELECT id, quote FROM KenRQuotes WHERE LastPosted IS NULL ORDER BY RANDOM() LIMIT 1;",
