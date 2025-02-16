@@ -36,6 +36,7 @@ pub fn register_location(command: &mut CreateApplicationCommand) -> &mut CreateA
                 .add_string_choice("Oceania", "1028759514092150785")
                 .add_string_choice("Australia", "1028759553099186216")
                 .add_string_choice("New Zealand", "1028759714550526072")
+                .add_string_choice("Hong Kong","1340538146517155860")
         })
 }
 
